@@ -3,6 +3,7 @@ import { LangProvider } from '@/components/portfolio/LangContext';
 import SmoothScroll from '@/components/portfolio/SmoothScroll';
 import TopBar from '@/components/portfolio/TopBar';
 import Hero from '@/components/portfolio/Hero';
+import HeroGate from '@/components/portfolio/HeroGate';
 import About from '@/components/portfolio/About';
 import Skills from '@/components/portfolio/Skills';
 import CaseStudies from '@/components/portfolio/CaseStudies';
@@ -17,6 +18,7 @@ function App() {
       <TopBar />
       <main className="relative grain">
         <Hero />
+        <HeroGate />
         <About />
         <Skills />
         <CaseStudies />
