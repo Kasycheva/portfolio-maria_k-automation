@@ -7,11 +7,13 @@ export default function Hero() {
   const { t } = useLang();
   const containerRef = useRef(null);
   const videoRef = useRef(null);
-  const lastVTRef = useRef(-1);
+  const targetTimeRef = useRef(0);
+  const currentTimeRef = useRef(0);
+  const lastAppliedRef = useRef(-1);
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
 
-  // Load video robustly
+  // Robust video loading + unlock seeking
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -29,13 +31,11 @@ export default function Hero() {
     };
   }, []);
 
-  // Native-scroll driven progress (smooth, lag-free)
+  // Scroll -> set TARGET progress + target video time. (Updates on every scroll event)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let raf = 0;
-    const tick = () => {
-      raf = 0;
+    const onScroll = () => {
       const rect = el.getBoundingClientRect();
       const total = el.offsetHeight - window.innerHeight;
       const scrolled = Math.min(Math.max(-rect.top, 0), total);
@@ -43,22 +43,37 @@ export default function Hero() {
       setProgress(p);
       const v = videoRef.current;
       if (v && v.duration && !isNaN(v.duration)) {
-        const vp = Math.max(0, Math.min(1, (p - 0.05) / 0.85));
-        const target = v.duration * vp;
-        if (Math.abs(target - lastVTRef.current) > 0.035) {
-          try { v.currentTime = target; lastVTRef.current = target; } catch (e) {}
-        }
+        // Map 0..1 -> 0..duration with a tiny ease-out at the end so it lands cleanly on last frame
+        const vp = Math.max(0, Math.min(1, p));
+        targetTimeRef.current = v.duration * vp;
       }
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
-    tick();
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
-      if (raf) cancelAnimationFrame(raf);
     };
+  }, []);
+
+  // RAF loop: smoothly LERP video.currentTime toward target. Decoupled from scroll = buttery smooth.
+  useEffect(() => {
+    let raf = 0;
+    const loop = () => {
+      const v = videoRef.current;
+      if (v && v.duration) {
+        // Smooth interpolation factor; lower = silkier (with more lag), higher = snappier
+        currentTimeRef.current += (targetTimeRef.current - currentTimeRef.current) * 0.18;
+        // Only push to video if delta worth a paint
+        if (Math.abs(currentTimeRef.current - lastAppliedRef.current) > 0.012) {
+          try { v.currentTime = currentTimeRef.current; lastAppliedRef.current = currentTimeRef.current; } catch (e) {}
+        }
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const intro = progress < 0.1;
@@ -70,22 +85,22 @@ export default function Hero() {
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#0a0a0a]">
         <div className="absolute inset-0 grid-bg opacity-40" />
 
-        {/* Crossfade: no-glasses image → video → sunglasses image */}
+        {/* ONE video element — its last frame already shows sunglasses, no image crossfade jumps */}
         <div className="absolute inset-0 flex">
           <div className="relative h-full w-full md:w-[58%]">
-            <img src="/assets/maria-no-sunglasses.jpg" alt=""
-              className="absolute inset-0 w-full h-full object-cover object-left" />
             <video
               ref={videoRef}
               src="/assets/maria-video-opt.mp4"
               muted playsInline preload="auto"
               poster="/assets/maria-no-sunglasses.jpg"
               className="absolute inset-0 w-full h-full object-cover object-left"
-              style={{ opacity: videoReady && progress > 0.02 && progress < 0.92 ? 1 : 0, transition: 'opacity .25s' }}
+              style={{ opacity: videoReady ? 1 : 0, transition: 'opacity .4s' }}
             />
-            <img src="/assets/maria-sunglasses.jpg" alt=""
-              className="absolute inset-0 w-full h-full object-cover object-left transition-opacity duration-500"
-              style={{ opacity: progress >= 0.85 ? 1 : 0 }} />
+            {/* Subtle fallback while metadata loads */}
+            <img src="/assets/maria-no-sunglasses.jpg" alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover object-left pointer-events-none"
+              style={{ opacity: videoReady ? 0 : 1, transition: 'opacity .4s' }} />
             <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-[#0a0a0a]" />
           </div>
         </div>
