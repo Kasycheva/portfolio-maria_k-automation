@@ -69,7 +69,7 @@ export default function Hero() {
       document.documentElement.dataset.heroGateY = String(getGateY());
       document.documentElement.dataset.heroGateLocked = String(!unlockedRef.current);
     };
-    const isAtGate = (threshold = 2) => window.scrollY >= getGateY() - threshold;
+    const isAtGate = () => window.scrollY >= getGateY() - 2;
     const blockForward = (event) => {
       if (!unlockedRef.current && isAtGate()) event.preventDefault();
     };
@@ -85,10 +85,7 @@ export default function Hero() {
     };
     const onTouchMove = (event) => {
       const currentY = event.touches[0]?.clientY;
-      if (touchStartYRef.current !== null && currentY < touchStartYRef.current && !unlockedRef.current && isAtGate(18)) {
-        event.preventDefault();
-        window.dispatchEvent(new Event('hero:snap-to-gate'));
-      }
+      if (touchStartYRef.current !== null && currentY < touchStartYRef.current) blockForward(event);
     };
     const onAnchorClick = (event) => {
       const anchor = event.target.closest?.('a[href^="#"]');

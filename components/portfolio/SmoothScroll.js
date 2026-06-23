@@ -19,7 +19,7 @@ export default function SmoothScroll() {
         const gateLocked = root.dataset.heroGateLocked === 'true';
         if (gateLocked && deltaY > 0 && Number.isFinite(gateY) && lenis.targetScroll + deltaY >= gateY) {
           if (event.cancelable) event.preventDefault();
-          lenis.scrollTo(gateY, { immediate: true, force: true });
+          lenis.scrollTo(gateY, { duration: 0.35, force: true });
           return false;
         }
       },
@@ -36,8 +36,7 @@ export default function SmoothScroll() {
     };
     const snapToHeroGate = () => {
       const gateY = Number(document.documentElement.dataset.heroGateY);
-      const gateLocked = document.documentElement.dataset.heroGateLocked === 'true';
-      if (gateLocked && Number.isFinite(gateY)) lenis.scrollTo(gateY, { immediate: true, force: true });
+      if (Number.isFinite(gateY)) lenis.scrollTo(gateY, { immediate: true, force: true });
     };
     window.addEventListener('hero:navigate', navigatePastHero);
     window.addEventListener('hero:snap-to-gate', snapToHeroGate);
