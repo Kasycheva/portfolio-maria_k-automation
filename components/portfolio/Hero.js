@@ -209,13 +209,13 @@ export default function Hero() {
               src="/assets/maria-video-opt.mp4"
               muted playsInline preload="auto"
               poster="/assets/maria-no-sunglasses.jpg"
-              className="absolute inset-0 w-full h-full object-cover object-left"
+              className="hero-vid absolute inset-0 w-full h-full object-cover object-left"
               style={{ opacity: videoReady ? 1 : 0, transition: 'opacity .4s' }}
             />
             {/* Subtle fallback while metadata loads */}
             <img src="/assets/maria-no-sunglasses.jpg" alt=""
               aria-hidden
-              className="absolute inset-0 w-full h-full object-cover object-left pointer-events-none"
+              className="hero-vid absolute inset-0 w-full h-full object-cover object-left pointer-events-none"
               style={{ opacity: videoReady ? 0 : 1, transition: 'opacity .4s' }} />
             <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-[#0a0a0a]" />
           </div>

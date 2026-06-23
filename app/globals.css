@@ -43,3 +43,11 @@ body { font-family: var(--font-inter), system-ui, sans-serif; }
 /* Hide scrollbar on terminal */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { scrollbar-width: none; }
+
+/* Hero mobile: reframe face into view on narrow viewports.
+   Face is at ~18% from left in the 1280×720 source frame.
+   object-position: 20% places it at 20% from the container's left edge
+   consistently across all phone widths. No effect above 767px. */
+@media (max-width: 767px) {
+  .hero-vid { object-position: 20% center; }
+}
