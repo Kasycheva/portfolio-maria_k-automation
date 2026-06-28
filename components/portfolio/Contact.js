@@ -9,7 +9,6 @@ import {
   Loader2,
   Mail,
   MessageCircle,
-  Send as SendIcon,
 } from 'lucide-react';
 import { useLang } from './LangContext';
 import Reveal from './Reveal';
@@ -185,13 +184,12 @@ export default function Contact() {
           </a>
         </div>
 
-        <Reveal className="relative mt-10 overflow-visible rounded-[2.25rem] border border-white/[0.09] bg-[#0a0a0a]/72 shadow-[0_35px_100px_rgba(0,0,0,0.28)] lg:mt-16" y={24}>
-          <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="grid lg:min-h-[560px] lg:grid-cols-[0.72fr_0.8fr_1.18fr]">
+        <Reveal className="relative mt-10 lg:mt-16" y={24}>
+          <div className="grid items-stretch lg:min-h-[560px] lg:grid-cols-[1fr_0.82fr_1.18fr] lg:gap-12 xl:gap-16">
             {/* Contact directory — the visual anchor of the section. */}
-            <div className="p-5 sm:p-7 lg:px-9 lg:py-10">
+            <div className="p-5 sm:p-7 lg:px-0 lg:py-8">
               <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/35">{t.contact.directory}</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#c5ff00]/70">{t.contact.directory}</span>
                 <span className="font-mono text-[10px] text-white/20">01—04</span>
               </div>
               <div>
@@ -203,9 +201,9 @@ export default function Contact() {
                     href={contact.href}
                     target={contact.external ? '_blank' : undefined}
                     rel={contact.external ? 'noreferrer noopener' : undefined}
-                    className="group flex items-center gap-4 border-b border-white/[0.08] py-5 transition-colors hover:border-[#c5ff00]/25"
+                    className="group flex items-center gap-5 border-b border-white/[0.08] py-6 transition-colors hover:border-[#c5ff00]/25"
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/40 transition group-hover:text-[#c5ff00]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
                       <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -216,7 +214,6 @@ export default function Contact() {
                         {contact.value}
                       </span>
                     </span>
-                    <ArrowUpRight className="h-4 w-4 shrink-0 text-white/25 transition group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#c5ff00]" />
                   </a>
                 );
               })}
@@ -225,9 +222,9 @@ export default function Contact() {
               <a
                 href="/assets/resume.pdf"
                 download="AI Automation - Kasycheva Maria.pdf"
-                className="group flex items-center gap-4 py-5"
+                className="group flex items-center gap-5 border-b border-white/[0.08] py-6"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center text-white/40 transition group-hover:text-[#c5ff00]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
                   <Download className="h-[17px] w-[17px]" strokeWidth={2} />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -238,56 +235,39 @@ export default function Contact() {
                     {t.contact.resume}
                   </span>
                 </span>
-                <Download className="h-4 w-4 shrink-0 text-white/25 transition group-hover:translate-y-1 group-hover:text-[#c5ff00]" />
               </a>
               </div>
             </div>
 
-            {/* The robot has a deliberate dock between information and action. */}
-            <div className="relative z-10 -my-8 hidden min-h-[624px] overflow-visible rounded-[2rem] border border-white/[0.11] bg-[#090909] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)] lg:block">
-              <div className="pointer-events-none absolute -left-10 top-[2.35rem] h-px w-10 bg-gradient-to-r from-transparent to-white/20" />
-              <div className="pointer-events-none absolute -right-16 top-[2.35rem] h-px w-16 bg-gradient-to-r from-white/20 to-transparent" />
-              <h3 className="pointer-events-none absolute right-6 top-5 z-20 font-display text-xl leading-none tracking-[-0.02em] text-white/75">
-                {t.contact.formHeading}
-              </h3>
-              <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[2rem] bg-[radial-gradient(circle_at_50%_42%,rgba(197,255,0,0.075),transparent_50%)]">
-                <div
-                  className="absolute inset-x-[-20%] bottom-[-18%] h-[48%] opacity-35"
-                  style={{
-                    backgroundImage: 'linear-gradient(rgba(197,255,0,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(197,255,0,0.12) 1px, transparent 1px)',
-                    backgroundSize: '38px 38px',
-                    maskImage: 'linear-gradient(to top, black, transparent 80%)',
-                    WebkitMaskImage: 'linear-gradient(to top, black, transparent 80%)',
-                    transform: 'perspective(420px) rotateX(64deg)',
-                    transformOrigin: '50% 100%',
-                  }}
-                />
-              </div>
+            {/* The robot is the free-standing center, not another card. */}
+            <div className="relative z-10 hidden min-h-[590px] overflow-visible lg:block">
               {showRobot && robotInView && (
                 <InteractiveRobotSpline
                   scene={ROBOT_SCENE_URL}
-                  className="absolute inset-0 h-full w-full scale-[0.88] hue-rotate-[165deg] saturate-[0.72] brightness-[0.94]"
+                  className="absolute inset-0 h-full w-full grayscale saturate-0 brightness-[0.92] contrast-[1.05]"
+                  style={{
+                    transform: 'translateY(-93px) scale(0.92, 1.06)',
+                    clipPath: 'inset(0 0 60px 0)',
+                  }}
                 />
               )}
-              {/* A quiet lower fade masks Spline chrome without adding another label. */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 rounded-b-[2rem] bg-gradient-to-t from-[#090909] from-45% via-[#090909]/95 to-transparent" />
             </div>
 
             {/* Form — a quiet editorial surface, not a competing card. */}
             <form
               onSubmit={submit}
-              className="relative flex h-full flex-col p-5 sm:p-7 lg:px-10 lg:py-10"
+              className="relative flex h-full flex-col p-5 sm:p-7 lg:px-0 lg:py-8"
             >
-              <div className="mb-8 flex items-start justify-between gap-5">
+              <div className="mb-6">
                 <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/35">{t.contact.formKicker}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#c5ff00]/70">{t.contact.formKicker}</div>
+                  <h3 className="mt-3 font-display text-3xl leading-none tracking-[-0.03em] text-white sm:text-4xl">
+                    {t.contact.formHeading}
+                  </h3>
                 </div>
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/30">
-                  <SendIcon className="h-4 w-4" strokeWidth={1.4} />
-                </span>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid gap-5">
                 <label className="group block">
                   <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">01 / {t.contact.name}</span>
                   <input
@@ -297,7 +277,7 @@ export default function Contact() {
                     maxLength={80}
                     value={form.name}
                     onChange={update('name')}
-                    className="mt-2 w-full border-b border-white/15 bg-transparent py-3 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
+                    className="mt-2 w-full border-b border-white/15 bg-transparent py-2.5 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
                     placeholder={t.contact.namePlaceholder}
                   />
                 </label>
@@ -311,18 +291,18 @@ export default function Contact() {
                     maxLength={160}
                     value={form.email}
                     onChange={update('email')}
-                    className="mt-2 w-full border-b border-white/15 bg-transparent py-3 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
+                    className="mt-2 w-full border-b border-white/15 bg-transparent py-2.5 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
                     placeholder={t.contact.emailPlaceholder}
                   />
                 </label>
               </div>
 
-              <label className="mt-8 block lg:flex-1">
+              <label className="mt-5 block">
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">03 / {t.contact.msg}</span>
                 <textarea
                   required
                   name="message"
-                  rows={4}
+                  rows={2}
                   maxLength={4000}
                   value={form.message}
                   onChange={update('message')}
@@ -336,7 +316,7 @@ export default function Contact() {
                 <input name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={update('website')} />
               </label>
 
-              <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-4 flex flex-col gap-4 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between lg:-translate-y-16">
                 <div className="min-h-5 text-xs font-mono" aria-live="polite">
                   {status === 'sent' && (
                     <span className="inline-flex items-center gap-2 text-[#c5ff00]">

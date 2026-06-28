@@ -8,7 +8,7 @@ const Spline = lazy(() => import('@splinetool/react-spline'));
 // Interactive 3D robot (Spline / WebGL). Heavy scene loaded from Spline CDN,
 // so the caller is responsible for mounting it only where it makes sense
 // (e.g. large screens). Lazy + Suspense keeps it out of the initial bundle.
-export function InteractiveRobotSpline({ scene, className }) {
+export function InteractiveRobotSpline({ scene, className, style }) {
   return (
     <Suspense
       fallback={
@@ -34,7 +34,7 @@ export function InteractiveRobotSpline({ scene, className }) {
         </div>
       }
     >
-      <Spline scene={scene} className={className} />
+      <Spline scene={scene} className={className} style={style} />
     </Suspense>
   );
 }
