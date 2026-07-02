@@ -276,8 +276,10 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Robot standing on Earth horizon - clean, elegant */}
-            <div className="relative z-10 hidden min-h-[590px] overflow-visible lg:block">
+            {/* Robot standing on Earth horizon - clean, elegant. Earth glow shows
+                from tablet (md) up; the heavy Spline robot stays desktop-only (lg),
+                gated separately below via showRobot. */}
+            <div className="relative z-10 hidden min-h-[590px] overflow-visible md:block">
               {/* Earth sphere - only the edge shows (minimalist horizon) */}
               <div
                 aria-hidden="true"
