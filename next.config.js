@@ -1,4 +1,7 @@
 const nextConfig = {
+  // Allows a local preview server to use an isolated cache directory instead
+  // of colliding with another Next.js process running from the workspace.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   output: 'standalone',
   images: {
     unoptimized: true,
