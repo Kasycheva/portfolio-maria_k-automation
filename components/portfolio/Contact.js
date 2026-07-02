@@ -113,8 +113,29 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '', website: '' });
   const [status, setStatus] = useState('idle');
   const [subRef, subInView] = useInView(0.92);
-  const [robotRef, robotInView] = useInView(1.05);
+  // Start loading the Spline scene ~1 viewport before the footer enters, and
+  // never unmount it afterwards — remounting refetches and reparses the whole
+  // scene, which is why the robot used to appear with a long delay.
+  const [robotRef, robotNear] = useInView(2.2);
   const showRobot = useMediaQuery('(min-width: 1024px)');
+  const [robotReady, setRobotReady] = useState(false);
+  useEffect(() => {
+    if (robotNear && showRobot) setRobotReady(true);
+  }, [robotNear, showRobot]);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  const copyEmail = async () => {
+    const address = CONTACTS.find((c) => c.key === 'email')?.value ?? '';
+    try {
+      await navigator.clipboard.writeText(address);
+    } catch (_error) {
+      // Clipboard API unavailable (older/insecure context) — fall back to mailto.
+      window.location.href = `mailto:${address}`;
+      return;
+    }
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 1800);
+  };
 
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -190,30 +211,46 @@ export default function Contact() {
             <div className="p-5 sm:p-7 lg:px-0 lg:py-8">
               <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#c5ff00]/70">{t.contact.directory}</span>
-                <span className="font-mono text-[10px] text-white/20">01—04</span>
               </div>
               <div>
               {CONTACTS.map((contact, index) => {
                 const Icon = contact.icon;
-                return (
+                const isEmail = contact.key === 'email';
+                const showCopied = isEmail && copiedEmail;
+                const rowClass =
+                  'group flex w-full items-center gap-5 border-b border-white/[0.08] py-6 text-left transition-colors hover:border-[#c5ff00]/25';
+                const body = (
+                  <>
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
+                      {showCopied ? (
+                        <CheckCircle2 className="h-[17px] w-[17px] text-[#c5ff00]" strokeWidth={1.8} />
+                      ) : (
+                        <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-mono text-[9px] uppercase tracking-[0.26em] text-white/35">
+                        0{index + 1} / {isEmail ? t.contact.copyEmail : t.contact[contact.key]}
+                      </span>
+                      <span className="mt-1.5 block truncate font-display text-[15px] text-white/80 transition group-hover:text-white sm:text-base">
+                        {showCopied ? t.contact.copied : contact.value}
+                      </span>
+                    </span>
+                  </>
+                );
+                return isEmail ? (
+                  <button key={contact.key} type="button" onClick={copyEmail} className={rowClass}>
+                    {body}
+                  </button>
+                ) : (
                   <a
                     key={contact.key}
                     href={contact.href}
                     target={contact.external ? '_blank' : undefined}
                     rel={contact.external ? 'noreferrer noopener' : undefined}
-                    className="group flex items-center gap-5 border-b border-white/[0.08] py-6 transition-colors hover:border-[#c5ff00]/25"
+                    className={rowClass}
                   >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
-                      <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-mono text-[9px] uppercase tracking-[0.26em] text-white/35">
-                        0{index + 1} / {t.contact[contact.key]}
-                      </span>
-                      <span className="mt-1.5 block truncate font-display text-[15px] text-white/80 transition group-hover:text-white sm:text-base">
-                        {contact.value}
-                      </span>
-                    </span>
+                    {body}
                   </a>
                 );
               })}
@@ -239,15 +276,71 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* The robot is the free-standing center, not another card. */}
+            {/* Robot standing on Earth horizon - clean, elegant */}
             <div className="relative z-10 hidden min-h-[590px] overflow-visible lg:block">
-              {showRobot && robotInView && (
+              {/* Earth sphere - only the edge shows (minimalist horizon) */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-0 left-1/2 z-0 -translate-x-1/2"
+                style={{ width: 0, height: 0 }}
+              >
+                <img
+                  src="/images/earth-green-ready.png"
+                  alt=""
+                  draggable={false}
+                  className="absolute left-1/2 max-w-none -translate-x-1/2 select-none"
+                  style={{
+                    top: '-420px',
+                    width: '1200px',
+                    height: 'auto',
+                    opacity: 0.65,
+                    filter: 'brightness(0.7) contrast(1.1) saturate(0.85)',
+                    maskImage:
+                      'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
+                    WebkitMaskImage:
+                      'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
+                  }}
+                />
+              </div>
+
+              {/* Earth edge glow - subtle luminescence */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-0 left-1/2 z-5 -translate-x-1/2"
+                style={{
+                  width: '600px',
+                  height: '300px',
+                  background: 'radial-gradient(ellipse 50% 80% at 50% 100%, rgba(197, 255, 0, 0.25), transparent 65%)',
+                  filter: 'blur(40px)',
+                }}
+              />
+
+              {/* Robot standing ON the Earth */}
+              {showRobot && robotReady && (
                 <InteractiveRobotSpline
                   scene={ROBOT_SCENE_URL}
-                  className="absolute inset-0 h-full w-full grayscale saturate-0 brightness-[0.92] contrast-[1.05]"
+                  className="absolute inset-0 z-10 h-full w-full grayscale saturate-0 opacity-92 brightness-[0.85] contrast-[1.03]"
                   style={{
-                    transform: 'translateY(-93px) scale(0.92, 1.06)',
-                    clipPath: 'inset(0 0 60px 0)',
+                    transform: 'translateY(130px) scale(0.72, 0.84)',
+                    clipPath: 'inset(0 0 70px 0)',
+                  }}
+                  fallback={null}
+                  onLoad={(app) => {
+                    try {
+                      const objects =
+                        typeof app.getAllObjects === 'function'
+                          ? app.getAllObjects()
+                          : ['Plane', 'Floor', 'Ground', 'Shadow'].map((name) =>
+                              app.findObjectByName(name)
+                            );
+                      objects.forEach((obj) => {
+                        if (obj && /plane|floor|ground|shadow/i.test(obj.name || '')) {
+                          obj.visible = false;
+                        }
+                      });
+                    } catch (_e) {
+                      /* scene API unavailable — non-fatal */
+                    }
                   }}
                 />
               )}
@@ -297,7 +390,7 @@ export default function Contact() {
                 </label>
               </div>
 
-              <label className="mt-5 block">
+              <label className="mt-5 block lg:mt-[3.125rem]">
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">03 / {t.contact.msg}</span>
                 <textarea
                   required
@@ -316,7 +409,7 @@ export default function Contact() {
                 <input name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={update('website')} />
               </label>
 
-              <div className="mt-4 flex flex-col gap-4 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between lg:-translate-y-16">
+              <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:-translate-y-4">
                 <div className="min-h-5 text-xs font-mono" aria-live="polite">
                   {status === 'sent' && (
                     <span className="inline-flex items-center gap-2 text-[#c5ff00]">
@@ -341,22 +434,24 @@ export default function Contact() {
           </div>
         </Reveal>
 
-        <div className="mt-16 border-t border-white/10 py-6 sm:mt-20 sm:py-8">
-          <div className="flex flex-col gap-6 font-mono text-[10px] uppercase tracking-[0.2em] text-white/35 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative z-30 mt-16 sm:mt-16">
+          {/* Back-to-top sits above the divider so the footer line stays a clean
+              single row even on narrow screens. */}
+          <div className="flex justify-end pb-5">
+            <button
+              type="button"
+              onClick={backToTop}
+              className="group pointer-events-auto inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/55 transition hover:text-[#c5ff00]"
+            >
+              {t.contact.backToTop}
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 transition group-hover:border-[#c5ff00]/40">
+                <ArrowUp className="h-3.5 w-3.5" />
+              </span>
+            </button>
+          </div>
+          <div className="relative flex flex-col gap-3 border-t border-white/10 bg-[#080808] py-6 font-mono text-[10px] uppercase tracking-[0.2em] text-white/35 sm:flex-row sm:items-center sm:justify-between sm:py-8">
             <span>{t.footer.replace('2025', String(new Date().getFullYear()))}</span>
-            <div className="flex items-center justify-between gap-8 sm:justify-end">
-              <span>Oslo · Remote worldwide</span>
-              <button
-                type="button"
-                onClick={backToTop}
-                className="group pointer-events-auto inline-flex items-center gap-2 text-white/55 transition hover:text-[#c5ff00]"
-              >
-                {t.contact.backToTop}
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 transition group-hover:border-[#c5ff00]/40">
-                  <ArrowUp className="h-3.5 w-3.5" />
-                </span>
-              </button>
-            </div>
+            <span>Remote worldwide</span>
           </div>
         </div>
       </div>
