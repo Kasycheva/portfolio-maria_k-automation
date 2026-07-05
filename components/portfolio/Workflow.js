@@ -129,7 +129,7 @@ export default function Workflow() {
   return (
     <section id="workflow" className="relative border-t border-white/5 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20">
-        <Reveal>
+        <Reveal variant="heading" y={44}>
           <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00]">{t.workflow.kicker}</div>
           <div className="mt-7 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-16">
             <h2 className="max-w-3xl font-serif text-5xl leading-[0.92] tracking-tight sm:text-6xl lg:text-[5.4rem]">

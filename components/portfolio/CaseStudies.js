@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLang } from './LangContext';
 import { caseStudies } from '@/lib/i18n';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import WorkflowGraph from './WorkflowGraph';
 import RoiCalculator from './RoiCalculator';
 import Reveal from './Reveal';
@@ -24,16 +24,82 @@ function Label({ children }) {
   return <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/40">{children}</div>;
 }
 
+const CARD_GRID = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.08,
+      staggerChildren: 0.085,
+    },
+  },
+};
+
+const CARD_REVEAL = {
+  hidden: {
+    opacity: 0,
+    y: 42,
+    rotateX: -5,
+    filter: 'blur(6px)',
+    clipPath: 'inset(10% 0 0 0)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    filter: 'blur(0px)',
+    clipPath: 'inset(0 0 0 0)',
+    transition: {
+      duration: 0.68,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
 export default function CaseStudies() {
   const { t, lang } = useLang();
   const [active, setActive] = useState(null);
   const [zoom, setZoom] = useState(false);
+  const cardsRef = useRef(null);
+  const reduceMotion = useReducedMotion();
+  const [cardsVisible, setCardsVisible] = useState(false);
   const L = (o) => (lang === 'ua' ? o.ua : o.en);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setCardsVisible(true);
+      return undefined;
+    }
+    if (cardsVisible) return undefined;
+
+    let frame = null;
+    const check = () => {
+      frame = null;
+      if (cardsVisible || !cardsRef.current) return;
+      const rect = cardsRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      if (rect.top < viewportHeight * 0.88 && rect.bottom > viewportHeight * 0.08) {
+        setCardsVisible(true);
+      }
+    };
+    const schedule = () => {
+      if (frame !== null || cardsVisible) return;
+      frame = window.requestAnimationFrame(check);
+    };
+
+    check();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
+  }, [cardsVisible, reduceMotion]);
 
   return (
     <section id="cases" className="relative py-24 md:py-32 border-t border-white/5">
       <div className="px-6 md:px-12 lg:px-20 max-w-[1500px] mx-auto">
-        <Reveal>
+        <Reveal variant="heading" y={44}>
           <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-8">{t.cases.kicker}</div>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tight max-w-3xl">{t.cases.heading}</h2>
@@ -41,14 +107,17 @@ export default function CaseStudies() {
           </div>
         </Reveal>
 
-        <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7">
+        <motion.div
+          ref={cardsRef}
+          initial="hidden"
+          animate={cardsVisible ? 'visible' : 'hidden'}
+          variants={CARD_GRID}
+          className="mt-16 grid gap-6 [perspective:1200px] sm:grid-cols-2 md:gap-7 lg:grid-cols-3"
+        >
           {caseStudies.map((c, i) => (
             <motion.button
               key={c.id}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: (i % 3) * 0.08 }}
+              variants={CARD_REVEAL}
               onClick={() => { setActive(c); setZoom(false); }}
               className={`group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0e0e0e] text-left transition-all duration-300 hover:-translate-y-1 hover:border-white/25 ${
                 i === caseStudies.length - 1 ? 'sm:col-span-2 lg:col-span-1' : ''
@@ -82,7 +151,7 @@ export default function CaseStudies() {
               </div>
             </motion.button>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Detail modal */}

@@ -28,7 +28,7 @@ class SplineErrorBoundary extends Component {
 export function InteractiveRobotSpline({ scene, className, style, onLoad, fallback }) {
   return (
     <SplineErrorBoundary fallback={fallback}>
-      <Suspense fallback={null}>
+      <Suspense fallback={fallback ?? null}>
         <Spline scene={scene} className={className} style={style} onLoad={onLoad} />
       </Suspense>
     </SplineErrorBoundary>
