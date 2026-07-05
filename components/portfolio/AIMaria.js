@@ -197,7 +197,7 @@ export default function AIMaria() {
   return (
     <section id="ai" className="relative py-24 sm:py-32 md:py-40 border-t border-white/5 bg-[radial-gradient(ellipse_at_center,rgba(197,255,0,0.035),transparent_58%)]">
       <div className="px-4 sm:px-6 md:px-12 lg:px-20 max-w-[1600px] mx-auto">
-        <Reveal>
+        <Reveal variant="heading" y={44}>
           <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-8">{t.ai.kicker}</div>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tight">{t.ai.heading}</h2>

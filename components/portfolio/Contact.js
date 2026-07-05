@@ -108,6 +108,21 @@ function AnimatedHeading({ text }) {
   );
 }
 
+function RobotLoader() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-[9] flex items-center justify-center transition-opacity duration-700"
+    >
+      <span className="relative mt-28 flex h-10 w-10 items-center justify-center">
+        <span className="absolute h-full w-full animate-ping rounded-full border border-[#c5ff00]/20" />
+        <span className="absolute h-6 w-6 rounded-full border border-[#c5ff00]/25 shadow-[0_0_24px_rgba(197,255,0,0.15)]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-[#c5ff00]/80 shadow-[0_0_12px_rgba(197,255,0,0.65)]" />
+      </span>
+    </div>
+  );
+}
+
 export default function Contact() {
   const { t } = useLang();
   const [form, setForm] = useState({ name: '', email: '', message: '', website: '' });
@@ -116,12 +131,22 @@ export default function Contact() {
   // Start loading the Spline scene ~1 viewport before the footer enters, and
   // never unmount it afterwards — remounting refetches and reparses the whole
   // scene, which is why the robot used to appear with a long delay.
-  const [robotRef, robotNear] = useInView(2.2);
+  const [robotRef, robotNear] = useInView(3.6);
   const showRobot = useMediaQuery('(min-width: 1024px)');
-  const [robotReady, setRobotReady] = useState(false);
+  const [robotMounted, setRobotMounted] = useState(false);
+  const [robotLoaded, setRobotLoaded] = useState(false);
   useEffect(() => {
-    if (robotNear && showRobot) setRobotReady(true);
-  }, [robotNear, showRobot]);
+    if (!robotNear || !showRobot || robotMounted) return undefined;
+
+    const mountRobot = () => setRobotMounted(true);
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(mountRobot, { timeout: 1400 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timerId = window.setTimeout(mountRobot, 180);
+    return () => window.clearTimeout(timerId);
+  }, [robotMounted, robotNear, showRobot]);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const copyEmail = async () => {
@@ -317,17 +342,22 @@ export default function Contact() {
                 }}
               />
 
+              {/* Lightweight placeholder while the WebGL scene prepares. */}
+              {showRobot && !robotLoaded && <RobotLoader />}
+
               {/* Robot standing ON the Earth */}
-              {showRobot && robotReady && (
+              {showRobot && robotMounted && (
                 <InteractiveRobotSpline
                   scene={ROBOT_SCENE_URL}
-                  className="absolute inset-0 z-10 h-full w-full grayscale saturate-0 opacity-92 brightness-[0.85] contrast-[1.03]"
+                  className="absolute inset-0 z-10 h-full w-full grayscale saturate-0 brightness-[0.85] contrast-[1.03] transition-opacity duration-700 ease-out"
                   style={{
                     transform: 'translateY(130px) scale(0.72, 0.84)',
                     clipPath: 'inset(0 0 70px 0)',
+                    opacity: robotLoaded ? 0.92 : 0,
                   }}
                   fallback={null}
                   onLoad={(app) => {
+                    window.requestAnimationFrame(() => setRobotLoaded(true));
                     try {
                       const objects =
                         typeof app.getAllObjects === 'function'

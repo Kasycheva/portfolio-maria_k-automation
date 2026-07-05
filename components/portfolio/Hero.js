@@ -117,7 +117,7 @@ export default function Hero() {
         window.dispatchEvent(new CustomEvent('hero:navigate', { detail: { target } }));
         return;
       }
-      if (!unlockedRef.current && anchor?.getAttribute('href') !== '#top') event.preventDefault();
+      if (!unlockedRef.current && anchor && anchor.getAttribute('href') !== '#top') event.preventDefault();
     };
     const onScrollGate = () => {
       const gateY = getGateY();
