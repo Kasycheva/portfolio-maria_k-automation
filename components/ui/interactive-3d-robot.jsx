@@ -16,6 +16,11 @@ class SplineErrorBoundary extends Component {
     return { failed: true };
   }
 
+  componentDidCatch() {
+    // Let the caller react (e.g. hide its loading indicator).
+    if (typeof this.props.onError === 'function') this.props.onError();
+  }
+
   render() {
     if (this.state.failed) return this.props.fallback ?? null;
     return this.props.children;
@@ -25,11 +30,11 @@ class SplineErrorBoundary extends Component {
 // Interactive 3D robot (Spline / WebGL). Heavy scene loaded from Spline CDN,
 // so the caller is responsible for mounting it only where it makes sense
 // (e.g. large screens). Lazy + Suspense keeps it out of the initial bundle.
-export function InteractiveRobotSpline({ scene, className, style, onLoad, fallback }) {
+export function InteractiveRobotSpline({ scene, className, style, onLoad, onError, fallback }) {
   return (
-    <SplineErrorBoundary fallback={fallback}>
+    <SplineErrorBoundary fallback={fallback} onError={onError}>
       <Suspense fallback={fallback ?? null}>
-        <Spline scene={scene} className={className} style={style} onLoad={onLoad} />
+        <Spline scene={scene} className={className} style={style} onLoad={onLoad} onError={onError} />
       </Suspense>
     </SplineErrorBoundary>
   );

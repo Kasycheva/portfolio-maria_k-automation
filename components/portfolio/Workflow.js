@@ -182,7 +182,7 @@ export default function Workflow() {
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
               transition={{ duration: reduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-[1.5rem] border border-white/10 bg-[#0c0c0c] p-6 sm:p-8"
+              className="rounded-[1.5rem] border border-white/10 bg-[#0c0c0c] p-6 sm:p-8 max-lg:order-2"
             >
               <div className="flex items-center justify-between gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.26em] text-[#c5ff00]">{t.workflow.inspectorLabel}</span>
@@ -218,7 +218,7 @@ export default function Workflow() {
             </motion.aside>
           </AnimatePresence>
 
-          <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#090909]">
+          <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#090909] max-lg:order-1">
             <div className="flex items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
               <div>
                 <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-white/30">{t.workflow.mapLabel}</div>

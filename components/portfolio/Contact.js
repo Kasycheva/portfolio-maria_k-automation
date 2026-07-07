@@ -138,6 +138,7 @@ export default function Contact() {
   const isTablet = useMediaQuery('(min-width: 768px)');
   const [robotMounted, setRobotMounted] = useState(false);
   const [robotLoaded, setRobotLoaded] = useState(false);
+  const [robotFailed, setRobotFailed] = useState(false);
   useEffect(() => {
     if (!robotNear || robotMounted) return undefined;
 
@@ -341,8 +342,9 @@ export default function Contact() {
                 }}
               />
 
-              {/* Lightweight placeholder while the WebGL scene prepares. */}
-              {!robotLoaded && <RobotLoader />}
+              {/* Lightweight placeholder while the WebGL scene prepares. Hidden
+                  if the scene fails (no WebGL) — the earth + glow stay alone. */}
+              {!robotLoaded && !robotFailed && <RobotLoader />}
 
               {/* Robot standing ON the Earth */}
               {robotMounted && (
@@ -359,6 +361,7 @@ export default function Contact() {
                     opacity: robotLoaded ? 0.92 : 0,
                   }}
                   fallback={null}
+                  onError={() => setRobotFailed(true)}
                   onLoad={(app) => {
                     window.requestAnimationFrame(() => setRobotLoaded(true));
                     try {
@@ -384,7 +387,7 @@ export default function Contact() {
             {/* Form — a quiet editorial surface, not a competing card. */}
             <form
               onSubmit={submit}
-              className="relative flex h-full flex-col p-5 sm:p-7 lg:px-0 lg:py-8"
+              className="relative flex h-full flex-col p-5 sm:p-7 max-md:mt-10 lg:px-0 lg:py-8"
             >
               <div className="mb-6">
                 <div className="max-lg:text-center">
