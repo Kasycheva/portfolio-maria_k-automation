@@ -234,7 +234,58 @@ export default function Workflow() {
               </button>
             </div>
 
-            <div ref={mapScrollRef} className="overflow-x-auto">
+            {/* Phone: a vertical stepper. The horizontal zig-zag map cannot fit
+                a phone without slicing nodes off the right edge, so below md we
+                stack the same stages top-to-bottom instead. */}
+            <div className="p-4 md:hidden">
+              <ol className="relative">
+                {STAGES.map((item, index) => {
+                  const active = index === selected;
+                  const complete = index < selected;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectStage(index)}
+                        aria-pressed={active}
+                        className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition duration-300 ${
+                          active
+                            ? 'border-[#c5ff00]/70 bg-[#c5ff00]/10 shadow-[0_0_24px_rgba(197,255,0,0.08)]'
+                            : complete
+                              ? 'border-white/20 bg-black/70'
+                              : 'border-white/10 bg-black/50 hover:border-white/25'
+                        }`}
+                      >
+                        <span
+                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] transition ${
+                            active
+                              ? 'bg-[#c5ff00] text-black'
+                              : complete
+                                ? 'bg-white/15 text-[#c5ff00]'
+                                : 'bg-white/10 text-white/55'
+                          }`}
+                        >
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className={`block font-mono text-sm ${active ? 'text-white' : 'text-white/70'}`}>{L(item.label)}</span>
+                          <span className="block truncate text-[11px] text-white/35">{L(item.verb)}</span>
+                        </span>
+                        {active && (
+                          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-[#c5ff00] shadow-[0_0_12px_rgba(197,255,0,0.9)]" />
+                        )}
+                      </button>
+                      {index < STAGES.length - 1 && (
+                        <div className={`ml-[27px] h-4 w-px transition-colors ${index < selected ? 'bg-[#c5ff00]/50' : 'bg-white/12'}`} />
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+              <div className="mt-5 font-mono text-[9px] uppercase tracking-[0.22em] text-white/25">{t.workflow.hintLabel}</div>
+            </div>
+
+            <div ref={mapScrollRef} className="hidden overflow-x-auto md:block">
               <div className="relative h-[430px] min-w-[760px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.085)_1px,transparent_1px)] [background-size:22px_22px] md:min-w-0">
                 <svg aria-hidden className="absolute inset-0 h-full w-full" viewBox="0 0 1000 420" preserveAspectRatio="none">
                   <polyline
