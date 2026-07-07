@@ -48,8 +48,14 @@ export default function SmoothScroll() {
       const gateY = Number(document.documentElement.dataset.heroGateY);
       if (Number.isFinite(gateY)) lenis.scrollTo(gateY, { immediate: true, force: true });
     };
+    // Modal overlays (case studies) freeze the page behind them via these
+    // events; lenis-stopped also sets overflow:hidden on <html> (globals.css).
+    const stopLenis = () => lenis.stop();
+    const startLenis = () => lenis.start();
     window.addEventListener('hero:navigate', navigatePastHero);
     window.addEventListener('hero:snap-to-gate', snapToHeroGate);
+    window.addEventListener('lenis:stop', stopLenis);
+    window.addEventListener('lenis:start', startLenis);
     lenis.on('scroll', ScrollTrigger.update);
     const raf = (time) => { lenis.raf(time * 1000); };
     gsap.ticker.add(raf);
@@ -59,6 +65,8 @@ export default function SmoothScroll() {
       window.removeEventListener('beforeunload', resetToHeroStart);
       window.removeEventListener('hero:navigate', navigatePastHero);
       window.removeEventListener('hero:snap-to-gate', snapToHeroGate);
+      window.removeEventListener('lenis:stop', stopLenis);
+      window.removeEventListener('lenis:start', startLenis);
       gsap.ticker.remove(raf);
       lenis.destroy();
     };

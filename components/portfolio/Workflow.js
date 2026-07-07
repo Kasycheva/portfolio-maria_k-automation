@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLang } from './LangContext';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Reveal from './Reveal';
@@ -105,6 +105,38 @@ export default function Workflow() {
   const stage = STAGES[selected];
   const progress = (selected / (STAGES.length - 1)) * 100;
   const packet = NODE_POSITIONS[selected];
+  const mapScrollRef = useRef(null);
+
+  // On phones the map is wider than the screen and scrolls sideways — keep the
+  // active node (and the travelling packet) in frame as the flow advances.
+  // Hand-rolled rAF tween: native smooth scrollTo gets its target overridden
+  // when stage changes arrive faster than the animation finishes.
+  useEffect(() => {
+    const scroller = mapScrollRef.current;
+    if (!scroller || scroller.scrollWidth <= scroller.clientWidth + 4) return undefined;
+    const start = scroller.scrollLeft;
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    const target = Math.max(0, Math.min(
+      (NODE_POSITIONS[selected].x / 100) * scroller.scrollWidth - scroller.clientWidth / 2,
+      max
+    ));
+    if (Math.abs(target - start) < 2) return undefined;
+    if (reduceMotion) {
+      scroller.scrollLeft = target;
+      return undefined;
+    }
+    let frame = null;
+    const t0 = performance.now();
+    const duration = 520;
+    const ease = (p) => 1 - Math.pow(1 - p, 3);
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / duration);
+      scroller.scrollLeft = start + (target - start) * ease(p);
+      if (p < 1) frame = window.requestAnimationFrame(step);
+    };
+    frame = window.requestAnimationFrame(step);
+    return () => { if (frame !== null) window.cancelAnimationFrame(frame); };
+  }, [selected, reduceMotion]);
 
   useEffect(() => {
     if (!playing) return;
@@ -130,12 +162,12 @@ export default function Workflow() {
     <section id="workflow" className="relative border-t border-white/5 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-6 md:px-12 lg:px-20">
         <Reveal variant="heading" y={44}>
-          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00]">{t.workflow.kicker}</div>
+          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] max-lg:text-center">{t.workflow.kicker}</div>
           <div className="mt-7 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-16">
-            <h2 className="max-w-3xl font-serif text-5xl leading-[0.92] tracking-tight sm:text-6xl lg:text-[5.4rem]">
+            <h2 className="max-w-3xl font-serif text-5xl leading-[0.92] tracking-tight sm:text-6xl lg:text-[5.4rem] max-lg:mx-auto max-lg:text-center">
               {t.workflow.heading}
             </h2>
-            <div className="max-w-xl lg:pb-2">
+            <div className="max-w-xl lg:pb-2 max-lg:mx-auto max-lg:text-center">
               <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-white/35">{t.workflow.definitionLabel}</div>
               <p className="mt-3 text-base leading-relaxed text-white/60 sm:text-lg">{t.workflow.sub}</p>
             </div>
@@ -157,10 +189,10 @@ export default function Workflow() {
                 <span className="font-mono text-[10px] text-white/30">{String(selected + 1).padStart(2, '0')} / {String(STAGES.length).padStart(2, '0')}</span>
               </div>
 
-              <div className="mt-7 font-serif text-4xl text-white sm:text-5xl">{L(stage.label)}</div>
-              <p className="mt-4 text-base leading-relaxed text-white/65">{L(stage.desc)}</p>
+              <div className="mt-7 font-serif text-4xl text-white sm:text-5xl max-lg:text-center">{L(stage.label)}</div>
+              <p className="mt-4 text-base leading-relaxed text-white/65 max-lg:text-center">{L(stage.desc)}</p>
 
-              <dl className="mt-8 space-y-5 border-t border-white/10 pt-6">
+              <dl className="mt-8 space-y-5 border-t border-white/10 pt-6 max-lg:text-center">
                 {[
                   [t.workflow.inputLabel, stage.input],
                   [t.workflow.outputLabel, stage.output],
@@ -173,9 +205,9 @@ export default function Workflow() {
                 ))}
               </dl>
 
-              <div className="mt-7">
+              <div className="mt-7 max-lg:text-center">
                 <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30">{t.workflow.toolsLabel}</div>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2 max-lg:justify-center">
                   {stage.tools.map((tool) => (
                     <span key={tool} className="rounded-full border border-white/15 px-3 py-1.5 font-mono text-[10px] text-white/65">
                       {tool}
@@ -202,8 +234,8 @@ export default function Workflow() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <div className="relative h-[430px] min-w-[760px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.085)_1px,transparent_1px)] [background-size:22px_22px] lg:min-w-0">
+            <div ref={mapScrollRef} className="overflow-x-auto">
+              <div className="relative h-[430px] min-w-[760px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.085)_1px,transparent_1px)] [background-size:22px_22px] md:min-w-0">
                 <svg aria-hidden className="absolute inset-0 h-full w-full" viewBox="0 0 1000 420" preserveAspectRatio="none">
                   <polyline
                     points={PATH_POINTS}

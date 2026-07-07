@@ -85,7 +85,7 @@ function AnimatedHeading({ text }) {
   return (
     <h2
       ref={ref}
-      className="mt-7 max-w-4xl font-display text-[clamp(2.4rem,6vw,5rem)] leading-[0.92] tracking-[-0.04em] text-white"
+      className="mt-7 max-w-4xl font-display text-[clamp(2.4rem,6vw,5rem)] leading-[0.92] tracking-[-0.04em] text-white max-lg:mx-auto max-lg:text-center"
     >
       {words.map((word, i) => (
         <span key={`${word}-${i}`} className="inline-block overflow-hidden align-bottom">
@@ -114,7 +114,7 @@ function RobotLoader() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-[9] flex items-center justify-center transition-opacity duration-700"
     >
-      <span className="relative mt-28 flex h-10 w-10 items-center justify-center">
+      <span className="relative mt-16 md:mt-28 flex h-10 w-10 items-center justify-center">
         <span className="absolute h-full w-full animate-ping rounded-full border border-[#c5ff00]/20" />
         <span className="absolute h-6 w-6 rounded-full border border-[#c5ff00]/25 shadow-[0_0_24px_rgba(197,255,0,0.15)]" />
         <span className="h-1.5 w-1.5 rounded-full bg-[#c5ff00]/80 shadow-[0_0_12px_rgba(197,255,0,0.65)]" />
@@ -132,11 +132,14 @@ export default function Contact() {
   // never unmount it afterwards — remounting refetches and reparses the whole
   // scene, which is why the robot used to appear with a long delay.
   const [robotRef, robotNear] = useInView(3.6);
-  const showRobot = useMediaQuery('(min-width: 1024px)');
+  // The robot now lives on every breakpoint; only its size differs. These
+  // resolve after mount, before the lazily mounted Spline scene needs them.
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const isTablet = useMediaQuery('(min-width: 768px)');
   const [robotMounted, setRobotMounted] = useState(false);
   const [robotLoaded, setRobotLoaded] = useState(false);
   useEffect(() => {
-    if (!robotNear || !showRobot || robotMounted) return undefined;
+    if (!robotNear || robotMounted) return undefined;
 
     const mountRobot = () => setRobotMounted(true);
     if ('requestIdleCallback' in window) {
@@ -146,7 +149,7 @@ export default function Contact() {
 
     const timerId = window.setTimeout(mountRobot, 180);
     return () => window.clearTimeout(timerId);
-  }, [robotMounted, robotNear, showRobot]);
+  }, [robotMounted, robotNear]);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const copyEmail = async () => {
@@ -197,7 +200,7 @@ export default function Contact() {
       <div className="pointer-events-none absolute right-0 top-0 h-px w-1/2 bg-gradient-to-l from-white/10 to-transparent" />
 
       <div className="relative mx-auto max-w-[1520px] px-4 sm:px-6 md:px-10 lg:px-12">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 max-lg:justify-center max-lg:gap-4 max-lg:text-center">
           <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00]">{t.contact.kicker}</div>
           <div className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
             <span className="relative flex h-2 w-2">
@@ -212,7 +215,7 @@ export default function Contact() {
 
         <div
           ref={subRef}
-          className="mt-6 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-end sm:justify-between"
+          className="mt-6 flex flex-col gap-4 border-t border-white/10 pt-6 max-lg:items-center max-lg:text-center lg:flex-row lg:items-end lg:justify-between"
           style={{
             opacity: subInView ? 1 : 0,
             transform: subInView ? 'none' : 'translateY(16px)',
@@ -234,7 +237,7 @@ export default function Contact() {
           <div className="grid items-stretch lg:min-h-[560px] lg:grid-cols-[1fr_0.82fr_1.18fr] lg:gap-12 xl:gap-16">
             {/* Contact directory — the visual anchor of the section. */}
             <div className="p-5 sm:p-7 lg:px-0 lg:py-8">
-              <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4 max-lg:justify-center">
                 <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#c5ff00]/70">{t.contact.directory}</span>
               </div>
               <div>
@@ -243,7 +246,7 @@ export default function Contact() {
                 const isEmail = contact.key === 'email';
                 const showCopied = isEmail && copiedEmail;
                 const rowClass =
-                  'group flex w-full items-center gap-5 border-b border-white/[0.08] py-6 text-left transition-colors hover:border-[#c5ff00]/25';
+                  'group flex w-full items-center gap-5 border-b border-white/[0.08] py-6 text-left transition-colors hover:border-[#c5ff00]/25 max-lg:justify-center';
                 const body = (
                   <>
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
@@ -253,7 +256,7 @@ export default function Contact() {
                         <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
                       )}
                     </span>
-                    <span className="min-w-0 flex-1">
+                    <span className="min-w-0 flex-1 max-lg:flex-none max-lg:text-center">
                       <span className="block font-mono text-[9px] uppercase tracking-[0.26em] text-white/35">
                         0{index + 1} / {isEmail ? t.contact.copyEmail : t.contact[contact.key]}
                       </span>
@@ -284,12 +287,12 @@ export default function Contact() {
               <a
                 href="/assets/resume.pdf"
                 download="AI Automation - Kasycheva Maria.pdf"
-                className="group flex items-center gap-5 border-b border-white/[0.08] py-6"
+                className="group flex items-center gap-5 border-b border-white/[0.08] py-6 max-lg:justify-center"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
                   <Download className="h-[17px] w-[17px]" strokeWidth={2} />
                 </span>
-                <span className="min-w-0 flex-1">
+                <span className="min-w-0 flex-1 max-lg:flex-none max-lg:text-center">
                   <span className="block font-mono text-[9px] uppercase tracking-[0.26em] text-white/40">
                     04 / PDF
                   </span>
@@ -301,10 +304,10 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Robot standing on Earth horizon - clean, elegant. Earth glow shows
-                from tablet (md) up; the heavy Spline robot stays desktop-only (lg),
-                gated separately below via showRobot. */}
-            <div className="relative z-10 hidden min-h-[590px] overflow-visible md:block">
+            {/* Robot standing on Earth horizon - clean, elegant. Desktop (lg+)
+                keeps the original sizing; tablet reuses it full-width; phones
+                get a compact variant of the same scene. */}
+            <div className="relative z-10 min-h-[340px] sm:min-h-[400px] md:min-h-[590px] overflow-visible">
               {/* Earth sphere - only the edge shows (minimalist horizon) */}
               <div
                 aria-hidden="true"
@@ -315,10 +318,8 @@ export default function Contact() {
                   src="/images/earth-green-ready.png"
                   alt=""
                   draggable={false}
-                  className="absolute left-1/2 max-w-none -translate-x-1/2 select-none"
+                  className="absolute left-1/2 max-w-none -translate-x-1/2 select-none top-[-280px] w-[780px] md:top-[-420px] md:w-[1200px]"
                   style={{
-                    top: '-420px',
-                    width: '1200px',
                     height: 'auto',
                     opacity: 0.65,
                     filter: 'brightness(0.7) contrast(1.1) saturate(0.85)',
@@ -333,26 +334,28 @@ export default function Contact() {
               {/* Earth edge glow - subtle luminescence */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute bottom-0 left-1/2 z-5 -translate-x-1/2"
+                className="pointer-events-none absolute bottom-0 left-1/2 z-5 -translate-x-1/2 w-[380px] h-[190px] md:w-[600px] md:h-[300px]"
                 style={{
-                  width: '600px',
-                  height: '300px',
                   background: 'radial-gradient(ellipse 50% 80% at 50% 100%, rgba(197, 255, 0, 0.25), transparent 65%)',
                   filter: 'blur(40px)',
                 }}
               />
 
               {/* Lightweight placeholder while the WebGL scene prepares. */}
-              {showRobot && !robotLoaded && <RobotLoader />}
+              {!robotLoaded && <RobotLoader />}
 
               {/* Robot standing ON the Earth */}
-              {showRobot && robotMounted && (
+              {robotMounted && (
                 <InteractiveRobotSpline
                   scene={ROBOT_SCENE_URL}
                   className="absolute inset-0 z-10 h-full w-full grayscale saturate-0 brightness-[0.85] contrast-[1.03] transition-opacity duration-700 ease-out"
                   style={{
-                    transform: 'translateY(130px) scale(0.72, 0.84)',
-                    clipPath: 'inset(0 0 70px 0)',
+                    transform: isDesktop
+                      ? 'translateY(130px) scale(0.72, 0.84)'
+                      : isTablet
+                        ? 'translateY(120px) scale(0.68, 0.8)'
+                        : 'translateY(56px) scale(0.6, 0.7)',
+                    clipPath: isTablet ? 'inset(0 0 70px 0)' : 'inset(0 0 58px 0)',
                     opacity: robotLoaded ? 0.92 : 0,
                   }}
                   fallback={null}
@@ -384,7 +387,7 @@ export default function Contact() {
               className="relative flex h-full flex-col p-5 sm:p-7 lg:px-0 lg:py-8"
             >
               <div className="mb-6">
-                <div>
+                <div className="max-lg:text-center">
                   <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#c5ff00]/70">{t.contact.formKicker}</div>
                   <h3 className="mt-3 font-display text-3xl leading-none tracking-[-0.03em] text-white sm:text-4xl">
                     {t.contact.formHeading}
@@ -393,7 +396,7 @@ export default function Contact() {
               </div>
 
               <div className="grid gap-5">
-                <label className="group block">
+                <label className="group block max-lg:text-center">
                   <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">01 / {t.contact.name}</span>
                   <input
                     required
@@ -402,11 +405,11 @@ export default function Contact() {
                     maxLength={80}
                     value={form.name}
                     onChange={update('name')}
-                    className="mt-2 w-full border-b border-white/15 bg-transparent py-2.5 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
+                    className="mt-2 w-full border-b border-white/15 bg-transparent py-2.5 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00] max-lg:text-center"
                     placeholder={t.contact.namePlaceholder}
                   />
                 </label>
-                <label className="group block">
+                <label className="group block max-lg:text-center">
                   <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">02 / {t.contact.email}</span>
                   <input
                     required
@@ -416,13 +419,13 @@ export default function Contact() {
                     maxLength={160}
                     value={form.email}
                     onChange={update('email')}
-                    className="mt-2 w-full border-b border-white/15 bg-transparent py-2.5 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
+                    className="mt-2 w-full border-b border-white/15 bg-transparent py-2.5 text-base text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00] max-lg:text-center"
                     placeholder={t.contact.emailPlaceholder}
                   />
                 </label>
               </div>
 
-              <label className="mt-5 block lg:mt-[3.125rem]">
+              <label className="mt-5 block max-lg:text-center lg:mt-[3.125rem]">
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">03 / {t.contact.msg}</span>
                 <textarea
                   required
@@ -431,7 +434,7 @@ export default function Contact() {
                   maxLength={4000}
                   value={form.message}
                   onChange={update('message')}
-                  className="mt-2 w-full resize-none border-b border-white/15 bg-transparent py-3 text-base leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00]"
+                  className="mt-2 w-full resize-none border-b border-white/15 bg-transparent py-3 text-base leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-[#c5ff00] max-lg:text-center"
                   placeholder={t.contact.messagePlaceholder}
                 />
               </label>
@@ -441,8 +444,8 @@ export default function Contact() {
                 <input name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={update('website')} />
               </label>
 
-              <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:-translate-y-4">
-                <div className="min-h-5 text-xs font-mono" aria-live="polite">
+              <div className="mt-5 flex flex-col gap-4 max-lg:items-center lg:flex-row lg:items-center lg:justify-between lg:-translate-y-4">
+                <div className="min-h-5 text-xs font-mono max-lg:text-center" aria-live="polite">
                   {status === 'sent' && (
                     <span className="inline-flex items-center gap-2 text-[#c5ff00]">
                       <CheckCircle2 className="h-4 w-4" /> {t.contact.sent}
@@ -469,7 +472,7 @@ export default function Contact() {
         <div className="relative z-30 mt-16 sm:mt-16">
           {/* Back-to-top sits above the divider so the footer line stays a clean
               single row even on narrow screens. */}
-          <div className="flex justify-end pb-5">
+          <div className="flex justify-end pb-5 max-lg:justify-center">
             <button
               type="button"
               onClick={backToTop}
@@ -481,7 +484,7 @@ export default function Contact() {
               </span>
             </button>
           </div>
-          <div className="relative flex flex-col gap-3 border-t border-white/10 bg-[#080808] py-6 font-mono text-[10px] uppercase tracking-[0.2em] text-white/35 sm:flex-row sm:items-center sm:justify-between sm:py-8">
+          <div className="relative flex flex-col gap-3 border-t border-white/10 bg-[#080808] py-6 font-mono text-[10px] uppercase tracking-[0.2em] text-white/35 max-lg:items-center max-lg:text-center sm:py-8 lg:flex-row lg:items-center lg:justify-between">
             <span>{t.footer.replace('2025', String(new Date().getFullYear()))}</span>
             <span>Remote worldwide</span>
           </div>

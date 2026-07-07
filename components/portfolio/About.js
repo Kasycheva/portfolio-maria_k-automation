@@ -68,7 +68,7 @@ export default function About() {
             initial={reduceMotion ? false : { opacity: 0, y: 14 }}
             animate={showIntro ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
             transition={{ duration: reduceMotion ? 0 : 0.48, ease: EASE }}
-            className="mb-5 font-mono text-xs tracking-[0.3em] text-[#c5ff00] sm:mb-6"
+            className="mb-5 font-mono text-xs tracking-[0.3em] text-[#c5ff00] sm:mb-6 max-md:text-center"
           >
             {t.about.kicker}
           </motion.div>
@@ -81,7 +81,7 @@ export default function About() {
                 ? { opacity: 1, y: '0%', filter: 'blur(0px)' }
                 : { opacity: 0, y: '34%', filter: 'blur(8px)' }}
               transition={{ duration: reduceMotion ? 0 : 0.72, delay: reduceMotion ? 0 : 0.08, ease: EASE }}
-              className={`font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl ${
+              className={`font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl max-md:text-center ${
                 lang === 'ua'
                   ? 'md:text-[3.65rem] lg:text-[4.35rem] xl:text-[4.6rem]'
                   : 'md:text-6xl lg:text-[5.25rem]'

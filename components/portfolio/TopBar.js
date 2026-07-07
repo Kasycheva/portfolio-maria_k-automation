@@ -30,7 +30,7 @@ export default function TopBar() {
   return (
     <motion.header
       initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }}
-      className={`fixed top-0 left-0 right-0 z-50 px-6 md:px-10 py-5 flex items-center justify-between text-white transition-colors duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 px-6 md:px-10 py-5 flex flex-wrap items-center justify-between text-white transition-colors duration-300 ${
         pastHero
           ? 'bg-[#0a0a0a]/70 backdrop-blur-md border-b border-white/10'
           : 'mix-blend-difference'
@@ -41,9 +41,9 @@ export default function TopBar() {
         {pastHero && (
           <motion.nav
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}
-            className="hidden md:flex items-center gap-5 lg:gap-7 font-mono text-[11px] tracking-[0.18em] uppercase">
+            className="hidden md:flex items-center gap-3.5 lg:gap-7 font-mono text-[10px] lg:text-[11px] tracking-[0.14em] lg:tracking-[0.18em] uppercase max-lg:mx-auto max-lg:pt-1">
             {t.nav.items.map((it, i) => (
-              <a key={it} href={`#${ids[i]}`} className={`transition ${active === ids[i] ? 'opacity-100' : 'opacity-55 hover:opacity-100'}`}>
+              <a key={it} href={`#${ids[i]}`} className={`whitespace-nowrap transition ${active === ids[i] ? 'opacity-100' : 'opacity-55 hover:opacity-100'}`}>
                 {it}
               </a>
             ))}
@@ -56,6 +56,24 @@ export default function TopBar() {
         <span className="opacity-40">|</span>
         <button onClick={() => setLang('en')} className={`px-2 py-1 transition ${lang==='en' ? 'opacity-100' : 'opacity-60 hover:opacity-100'}`}>EN</button>
       </div>
+
+      {/* Phone nav: own centered row under the bar. Scrolls sideways when the
+          labels do not fit, centers itself when they do. */}
+      <AnimatePresence>
+        {pastHero && (
+          <motion.nav
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }}
+            className="order-last basis-full overflow-x-auto scrollbar-hide pt-3 md:hidden">
+            <div className="mx-auto flex w-max items-center gap-4 font-mono text-[10px] tracking-[0.12em] uppercase">
+              {t.nav.items.map((it, i) => (
+                <a key={it} href={`#${ids[i]}`} className={`whitespace-nowrap transition ${active === ids[i] ? 'opacity-100 text-[#c5ff00]' : 'opacity-55'}`}>
+                  {it}
+                </a>
+              ))}
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }
