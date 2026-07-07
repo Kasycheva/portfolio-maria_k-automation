@@ -52,6 +52,23 @@ export default function AIMaria() {
   const scrollTrackRef = useRef(null);
   const terminalRef = useRef(null);
 
+  // The slower terminal reveal (a longer pinned scroll track) is kept on strong
+  // devices — iPhone, tablet, desktop — where it always ran fine. On Android
+  // phones (where weak GPUs cluster and it lagged approaching the terminal) we
+  // use the original short track so it stays smooth. Default true so the capable
+  // majority gets the right pacing on first paint; only Android phones flip.
+  const [slowPacing, setSlowPacing] = useState(true);
+  useEffect(() => {
+    const isIOS = /iphone|ipod/i.test(navigator.userAgent || '');
+    const compute = () => {
+      const isPhone = window.matchMedia('(max-width: 767px)').matches;
+      setSlowPacing(!isPhone || isIOS); // fast pacing only on non-iOS phones
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+
   const animating = phase === 'cmd' || phase === 'answer';
 
   // ScrollTrigger is already updated from the Lenis instance in SmoothScroll.
@@ -110,7 +127,9 @@ export default function AIMaria() {
       window.cancelAnimationFrame(refreshId);
       media.revert();
     };
-  }, []);
+    // Re-run when the pacing resolves so ScrollTrigger measures the final track
+    // height (the class flips shortly after mount on Android phones).
+  }, [slowPacing]);
 
   // Keep the body scrolled to the freshest line while typing.
   useEffect(() => {
@@ -207,7 +226,11 @@ export default function AIMaria() {
 
         <div
           ref={scrollTrackRef}
-          className="relative mt-8 h-[145svh] sm:mt-12 sm:h-[155svh] lg:h-[175svh] 2xl:h-[185svh]"
+          className={`relative mt-8 sm:mt-12 ${
+            slowPacing
+              ? 'h-[190svh] sm:h-[200svh] lg:h-[175svh] 2xl:h-[185svh]'
+              : 'h-[145svh] sm:h-[155svh] lg:h-[175svh] 2xl:h-[185svh]'
+          }`}
         >
           <div className="sticky top-0 flex min-h-svh items-center py-4 sm:py-8 [perspective:900px]">
             <div
