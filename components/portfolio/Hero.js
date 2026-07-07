@@ -2,9 +2,25 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from './LangContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDeviceCapability } from './useDeviceCapability';
+
+// Resolution-appropriate, lazily loaded source. Small screens and genuinely
+// constrained devices (low memory / data-saver) get a small, keyframe-dense
+// encode so frame-seeking stays cheap; larger/capable screens keep the
+// full-quality clip. Resolution is chosen by screen size + real constraint —
+// NOT by reduced-motion, so a capable desktop never loses sharpness. The
+// frame-scrub design itself is identical on every tier.
+function pickVideoSource(lowPower) {
+  if (typeof window === 'undefined') return '/assets/maria-video-opt-hq.mp4';
+  const w = window.innerWidth || document.documentElement.clientWidth || 1024;
+  if (lowPower || w < 768) return '/assets/maria-video-mobile.mp4';
+  if (w < 1024) return '/assets/maria-video-opt.mp4';
+  return '/assets/maria-video-opt-hq.mp4';
+}
 
 export default function Hero() {
   const { t } = useLang();
+  const { tier, lowPower } = useDeviceCapability();
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const targetTimeRef = useRef(0);
@@ -16,9 +32,23 @@ export default function Hero() {
   const touchStartYRef = useRef(null);
   const stableVHRef = useRef(0);
   const stableWRef = useRef(0);
+  // Tier drives how aggressively we throttle seeks. Kept in a ref so the RAF
+  // loop reads the latest value without re-subscribing.
+  const liteRef = useRef(false);
+  const [videoSrc, setVideoSrc] = useState(null);
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+
+  useEffect(() => {
+    liteRef.current = tier === 'lite';
+  }, [tier]);
+
+  // Lazy-load: resolve the source only after mount, so the poster paints first
+  // and the (right-sized) video download is deferred off the critical path.
+  useEffect(() => {
+    setVideoSrc(pickVideoSource(lowPower));
+  }, [lowPower]);
 
   // Stable viewport height: ignore the mobile URL bar showing/hiding (it
   // changes window.innerHeight mid-scroll, which made the hero gate move and
@@ -59,10 +89,10 @@ export default function Hero() {
     };
   }, []);
 
-  // Robust video loading + unlock seeking
+  // Robust video loading + unlock seeking. Runs once the (lazy) source resolves.
   useEffect(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !videoSrc) return;
     const ready = () => setVideoReady(true);
     if (v.readyState >= 1) ready();
     v.addEventListener('loadedmetadata', ready);
@@ -75,7 +105,7 @@ export default function Hero() {
       v.removeEventListener('loadeddata', ready);
       v.removeEventListener('canplay', ready);
     };
-  }, []);
+  }, [videoSrc]);
 
   // Keep the final Hero frame as a real gate. Reverse scrolling always remains available.
   useEffect(() => {
@@ -188,10 +218,16 @@ export default function Hero() {
     const loop = () => {
       const v = videoRef.current;
       if (v && v.duration) {
-        // Smooth interpolation factor; lower = silkier (with more lag), higher = snappier
-        currentTimeRef.current += (targetTimeRef.current - currentTimeRef.current) * 0.18;
+        // Smooth interpolation factor; lower = silkier (with more lag), higher = snappier.
+        // On weak devices, a lower factor + larger paint threshold issue far fewer
+        // currentTime seeks per scroll, which is what keeps Android decoders from
+        // piling up and juddering. Capable devices keep the original snappy values.
+        const lite = liteRef.current;
+        const lerp = lite ? 0.12 : 0.18;
+        const seekThreshold = lite ? 0.03 : 0.012;
+        currentTimeRef.current += (targetTimeRef.current - currentTimeRef.current) * lerp;
         // Only push to video if delta worth a paint
-        if (Math.abs(currentTimeRef.current - lastAppliedRef.current) > 0.012) {
+        if (Math.abs(currentTimeRef.current - lastAppliedRef.current) > seekThreshold) {
           // Don't stack a new seek while the decoder is still resolving the
           // previous one — on weak browsers (smart TVs) seek pile-up blanks the
           // video mid-scroll. A 200ms fallback still forces progress if
@@ -236,8 +272,19 @@ export default function Hero() {
           <div className="hero-media relative h-full w-full md:w-[58%]">
             <video
               ref={videoRef}
-              src="/assets/maria-video-opt-hq.mp4"
+              src={videoSrc || undefined}
               muted playsInline preload="auto"
+              // Extra inline hints for non-standard mobile browsers (UC / X5 / the
+              // "Mia" case) that would otherwise open the file as a standalone
+              // video tab or force fullscreen.
+              // eslint-disable-next-line react/no-unknown-property
+              webkit-playsinline="true"
+              // eslint-disable-next-line react/no-unknown-property
+              x5-playsinline="true"
+              disablePictureInPicture
+              disableRemotePlayback
+              controls={false}
+              controlsList="nodownload noplaybackrate nofullscreen"
               poster="/assets/maria-no-sunglasses-hq.jpg"
               className="hero-vid absolute inset-0 w-full h-full object-cover object-left"
               style={{ opacity: videoReady ? 1 : 0, transition: 'opacity .4s' }}

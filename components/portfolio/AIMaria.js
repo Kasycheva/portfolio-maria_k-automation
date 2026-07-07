@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useLang } from './LangContext';
 import Reveal from './Reveal';
+import { useDeviceCapability } from './useDeviceCapability';
 
 // Typing speeds (ms). Command types like a person; the answer streams fast but
 // stays comfortable to read.
@@ -35,6 +36,7 @@ function buildAnswer(paragraphs) {
 
 export default function AIMaria() {
   const { t, lang } = useLang();
+  const { tier } = useDeviceCapability();
   const topics = t.ai.topics;
 
   // What is currently shown in the terminal body.
@@ -95,12 +97,24 @@ export default function AIMaria() {
       );
     };
 
-    media.add('(max-width: 767px)', () => {
-      addAnimation({ opacity: 0.35, rotateX: 34, rotateZ: -1.4, scale: 0.58, y: 150 });
-    });
-    media.add('(min-width: 768px)', () => {
-      addAnimation({ opacity: 0.28, rotateX: 38, rotateZ: -1.2, scale: 0.68, y: 190 });
-    });
+    if (tier === 'lite') {
+      // Weak devices: skip the heavy 3D perspective scrub (rotateX/scale/perspective
+      // are expensive to composite while pinned). A gentle rise + fade keeps the
+      // entrance without the cost. Capable devices keep the full 3D scrub below.
+      media.add('(max-width: 767px)', () => {
+        addAnimation({ opacity: 0.4, rotateX: 0, rotateZ: 0, scale: 0.92, y: 90 });
+      });
+      media.add('(min-width: 768px)', () => {
+        addAnimation({ opacity: 0.4, rotateX: 0, rotateZ: 0, scale: 0.94, y: 110 });
+      });
+    } else {
+      media.add('(max-width: 767px)', () => {
+        addAnimation({ opacity: 0.35, rotateX: 34, rotateZ: -1.4, scale: 0.58, y: 150 });
+      });
+      media.add('(min-width: 768px)', () => {
+        addAnimation({ opacity: 0.28, rotateX: 38, rotateZ: -1.2, scale: 0.68, y: 190 });
+      });
+    }
 
     // Fonts and the sections above can settle after the first layout pass.
     // A refresh keeps the start/end positions exact without polling the page.
@@ -110,7 +124,9 @@ export default function AIMaria() {
       window.cancelAnimationFrame(refreshId);
       media.revert();
     };
-  }, []);
+    // Re-run when the capability tier resolves (it flips from the default 'full'
+    // to 'lite' shortly after mount on weak devices).
+  }, [tier]);
 
   // Keep the body scrolled to the freshest line while typing.
   useEffect(() => {

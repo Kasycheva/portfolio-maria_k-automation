@@ -13,6 +13,7 @@ import {
 import { useLang } from './LangContext';
 import Reveal from './Reveal';
 import { InteractiveRobotSpline } from '@/components/ui/interactive-3d-robot';
+import { useDeviceCapability } from './useDeviceCapability';
 
 const ROBOT_SCENE_URL = 'https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode';
 
@@ -132,15 +133,20 @@ export default function Contact() {
   // never unmount it afterwards — remounting refetches and reparses the whole
   // scene, which is why the robot used to appear with a long delay.
   const [robotRef, robotNear] = useInView(3.6);
-  // The robot now lives on every breakpoint; only its size differs. These
-  // resolve after mount, before the lazily mounted Spline scene needs them.
+  // Capability gate: the WebGL robot + the heavy earth PNG render only where the
+  // device can handle them (desktop + capable phones/tablets). On weak devices
+  // (low memory / software GPU / data-saver / reduced-motion) we show ONLY the
+  // green glow — no Spline, no 1.66 MB earth image, no loading dot.
+  const { canRenderRobot } = useDeviceCapability();
+  // Size differs per breakpoint; these resolve after mount, before the lazily
+  // mounted Spline scene needs them.
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const isTablet = useMediaQuery('(min-width: 768px)');
   const [robotMounted, setRobotMounted] = useState(false);
   const [robotLoaded, setRobotLoaded] = useState(false);
   const [robotFailed, setRobotFailed] = useState(false);
   useEffect(() => {
-    if (!robotNear || robotMounted) return undefined;
+    if (!robotNear || robotMounted || !canRenderRobot) return undefined;
 
     const mountRobot = () => setRobotMounted(true);
     if ('requestIdleCallback' in window) {
@@ -150,7 +156,7 @@ export default function Contact() {
 
     const timerId = window.setTimeout(mountRobot, 180);
     return () => window.clearTimeout(timerId);
-  }, [robotMounted, robotNear]);
+  }, [robotMounted, robotNear, canRenderRobot]);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const copyEmail = async () => {
@@ -309,30 +315,34 @@ export default function Contact() {
                 keeps the original sizing; tablet reuses it full-width; phones
                 get a compact variant of the same scene. */}
             <div className="relative z-10 min-h-[340px] sm:min-h-[400px] md:min-h-[590px] overflow-visible">
-              {/* Earth sphere - only the edge shows (minimalist horizon) */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute bottom-0 left-1/2 z-0 -translate-x-1/2"
-                style={{ width: 0, height: 0 }}
-              >
-                <img
-                  src="/images/earth-green-ready.png"
-                  alt=""
-                  draggable={false}
-                  className="absolute left-1/2 max-w-none -translate-x-1/2 select-none top-[-280px] w-[780px] md:top-[-420px] md:w-[1200px]"
-                  style={{
-                    height: 'auto',
-                    opacity: 0.65,
-                    filter: 'brightness(0.7) contrast(1.1) saturate(0.85)',
-                    maskImage:
-                      'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
-                    WebkitMaskImage:
-                      'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
-                  }}
-                />
-              </div>
+              {/* Earth sphere - only the edge shows (minimalist horizon). Heavy
+                  1.66 MB PNG, so it loads only where the robot also runs. */}
+              {canRenderRobot && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute bottom-0 left-1/2 z-0 -translate-x-1/2"
+                  style={{ width: 0, height: 0 }}
+                >
+                  <img
+                    src="/images/earth-green-ready.png"
+                    alt=""
+                    draggable={false}
+                    className="absolute left-1/2 max-w-none -translate-x-1/2 select-none top-[-280px] w-[780px] md:top-[-420px] md:w-[1200px]"
+                    style={{
+                      height: 'auto',
+                      opacity: 0.65,
+                      filter: 'brightness(0.7) contrast(1.1) saturate(0.85)',
+                      maskImage:
+                        'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
+                      WebkitMaskImage:
+                        'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
+                    }}
+                  />
+                </div>
+              )}
 
-              {/* Earth edge glow - subtle luminescence */}
+              {/* Earth edge glow - subtle luminescence. Always shown: on weak
+                  devices this soft green glow stands in for the whole scene. */}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute bottom-0 left-1/2 z-5 -translate-x-1/2 w-[380px] h-[190px] md:w-[600px] md:h-[300px]"
@@ -343,8 +353,8 @@ export default function Contact() {
               />
 
               {/* Lightweight placeholder while the WebGL scene prepares. Hidden
-                  if the scene fails (no WebGL) — the earth + glow stay alone. */}
-              {!robotLoaded && !robotFailed && <RobotLoader />}
+                  if the scene fails or the device can't run it — glow stays alone. */}
+              {canRenderRobot && !robotLoaded && !robotFailed && <RobotLoader />}
 
               {/* Robot standing ON the Earth */}
               {robotMounted && (
