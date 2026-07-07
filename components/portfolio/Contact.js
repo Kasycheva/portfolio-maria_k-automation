@@ -142,11 +142,22 @@ export default function Contact() {
   // mounted Spline scene needs them.
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const isTablet = useMediaQuery('(min-width: 768px)');
+  // iPhones handle the WebGL scene well, so they keep the robot even at phone
+  // widths. Android phones are where weak GPUs cluster (and a 4 GB mid-ranger
+  // can't be told apart from a strong one), so the robot is dropped there and
+  // the glow stands in — matching the proven-smooth original. iPad reads as a
+  // tablet (>=768) and is covered by isTablet.
+  const [isIPhone, setIsIPhone] = useState(false);
+  useEffect(() => {
+    setIsIPhone(/iphone|ipod/i.test(navigator.userAgent || ''));
+  }, []);
+  // Robot on tablet + desktop + iPhone; not on Android phones. Phones show glow.
+  const showRobot = canRenderRobot && (isTablet || isIPhone);
   const [robotMounted, setRobotMounted] = useState(false);
   const [robotLoaded, setRobotLoaded] = useState(false);
   const [robotFailed, setRobotFailed] = useState(false);
   useEffect(() => {
-    if (!robotNear || robotMounted || !canRenderRobot) return undefined;
+    if (!robotNear || robotMounted || !showRobot) return undefined;
 
     const mountRobot = () => setRobotMounted(true);
     if ('requestIdleCallback' in window) {
@@ -156,7 +167,7 @@ export default function Contact() {
 
     const timerId = window.setTimeout(mountRobot, 180);
     return () => window.clearTimeout(timerId);
-  }, [robotMounted, robotNear, canRenderRobot]);
+  }, [robotMounted, robotNear, showRobot]);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const copyEmail = async () => {
@@ -317,7 +328,7 @@ export default function Contact() {
             <div className="relative z-10 min-h-[340px] sm:min-h-[400px] md:min-h-[590px] overflow-visible">
               {/* Earth sphere - only the edge shows (minimalist horizon). Heavy
                   1.66 MB PNG, so it loads only where the robot also runs. */}
-              {canRenderRobot && (
+              {showRobot && (
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute bottom-0 left-1/2 z-0 -translate-x-1/2"
@@ -354,7 +365,7 @@ export default function Contact() {
 
               {/* Lightweight placeholder while the WebGL scene prepares. Hidden
                   if the scene fails or the device can't run it — glow stays alone. */}
-              {canRenderRobot && !robotLoaded && !robotFailed && <RobotLoader />}
+              {showRobot && !robotLoaded && !robotFailed && <RobotLoader />}
 
               {/* Robot standing ON the Earth */}
               {robotMounted && (
