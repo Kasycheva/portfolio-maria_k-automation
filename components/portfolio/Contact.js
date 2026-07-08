@@ -322,38 +322,38 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Robot standing on Earth horizon - clean, elegant. Desktop (lg+)
-                keeps the original sizing; tablet reuses it full-width; phones
-                get a compact variant of the same scene. */}
+            {/* Robot standing on the Earth horizon — rendered only where the
+                robot runs (desktop / tablet / iPhone). On weak devices the whole
+                column, its reserved height AND the glow, is dropped so the footer
+                collapses to a normal, compact layout (no "ghost" glow). */}
+            {showRobot && (
             <div className="relative z-10 min-h-[340px] sm:min-h-[400px] md:min-h-[590px] overflow-visible">
               {/* Earth sphere - only the edge shows (minimalist horizon). Heavy
-                  1.66 MB PNG, so it loads only where the robot also runs. */}
-              {showRobot && (
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute bottom-0 left-1/2 z-0 -translate-x-1/2"
-                  style={{ width: 0, height: 0 }}
-                >
-                  <img
-                    src="/images/earth-green-ready.png"
-                    alt=""
-                    draggable={false}
-                    className="absolute left-1/2 max-w-none -translate-x-1/2 select-none top-[-280px] w-[780px] md:top-[-420px] md:w-[1200px]"
-                    style={{
-                      height: 'auto',
-                      opacity: 0.65,
-                      filter: 'brightness(0.7) contrast(1.1) saturate(0.85)',
-                      maskImage:
-                        'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
-                      WebkitMaskImage:
-                        'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
-                    }}
-                  />
-                </div>
-              )}
+                  1.66 MB PNG, but the whole column only mounts where the robot
+                  runs, so it never loads on weak devices. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-0 left-1/2 z-0 -translate-x-1/2"
+                style={{ width: 0, height: 0 }}
+              >
+                <img
+                  src="/images/earth-green-ready.png"
+                  alt=""
+                  draggable={false}
+                  className="absolute left-1/2 max-w-none -translate-x-1/2 select-none top-[-280px] w-[780px] md:top-[-420px] md:w-[1200px]"
+                  style={{
+                    height: 'auto',
+                    opacity: 0.65,
+                    filter: 'brightness(0.7) contrast(1.1) saturate(0.85)',
+                    maskImage:
+                      'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
+                    WebkitMaskImage:
+                      'radial-gradient(ellipse 35% 55% at 50% 52%, #000 0%, #000 35%, transparent 72%)',
+                  }}
+                />
+              </div>
 
-              {/* Earth edge glow - subtle luminescence. Always shown: on weak
-                  devices this soft green glow stands in for the whole scene. */}
+              {/* Earth edge glow - subtle luminescence behind the robot. */}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute bottom-0 left-1/2 z-5 -translate-x-1/2 w-[380px] h-[190px] md:w-[600px] md:h-[300px]"
@@ -363,9 +363,9 @@ export default function Contact() {
                 }}
               />
 
-              {/* Lightweight placeholder while the WebGL scene prepares. Hidden
-                  if the scene fails or the device can't run it — glow stays alone. */}
-              {showRobot && !robotLoaded && !robotFailed && <RobotLoader />}
+              {/* Lightweight placeholder while the WebGL scene prepares; hidden
+                  once it loads or if it fails. */}
+              {!robotLoaded && !robotFailed && <RobotLoader />}
 
               {/* Robot standing ON the Earth */}
               {robotMounted && (
@@ -404,6 +404,7 @@ export default function Contact() {
                 />
               )}
             </div>
+            )}
 
             {/* Form — a quiet editorial surface, not a competing card. */}
             <form

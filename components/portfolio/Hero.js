@@ -4,18 +4,18 @@ import { useLang } from './LangContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDeviceCapability } from './useDeviceCapability';
 
-// Resolution-appropriate, lazily loaded source. Small screens and genuinely
-// constrained devices (low memory / data-saver) get a small, keyframe-dense
-// encode so frame-seeking stays cheap; larger/capable screens keep the
-// full-quality clip. Resolution is chosen by screen size + real constraint —
-// NOT by reduced-motion, so a capable desktop never loses sharpness. The
-// frame-scrub design itself is identical on every tier.
+// Resolution-appropriate, lazily loaded source. Phones and genuinely constrained
+// devices (low memory / data-saver) get a small, keyframe-dense encode so
+// frame-seeking stays cheap and it still looks sharp on a small screen. Strong
+// tablets and desktop get the full-quality clip. Resolution is chosen by screen
+// size + real constraint — NOT by reduced-motion, so a capable screen never
+// loses sharpness. The frame-scrub design itself is identical on every tier.
 function pickVideoSource(lowPower) {
   if (typeof window === 'undefined') return '/assets/maria-video-opt-hq.mp4';
   const w = window.innerWidth || document.documentElement.clientWidth || 1024;
-  if (lowPower || w < 768) return '/assets/maria-video-mobile.mp4';
-  if (w < 1024) return '/assets/maria-video-opt.mp4';
-  return '/assets/maria-video-opt-hq.mp4';
+  if (w < 768) return '/assets/maria-video-mobile.mp4';   // phones: light
+  if (lowPower) return '/assets/maria-video-mobile.mp4';  // weak tablet: light
+  return '/assets/maria-video-opt-hq.mp4';                // strong tablet + desktop: HQ
 }
 
 export default function Hero() {
