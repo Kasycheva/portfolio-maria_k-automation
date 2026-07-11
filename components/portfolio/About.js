@@ -61,14 +61,14 @@ export default function About() {
     >
       <div className="pointer-events-none absolute -top-16 left-1/4 h-[320px] w-[320px] rounded-full bg-[#c5ff00]/[0.035] blur-[150px]" />
 
-      <div className="relative mx-auto grid max-w-7xl items-start gap-12 md:grid-cols-12 md:gap-16">
-        <div className="md:sticky md:top-28 md:col-span-5">
+      <div className="relative mx-auto grid max-w-7xl items-start gap-12 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:sticky lg:top-28 lg:col-span-5">
           <motion.div
             key={`about-label-${revealCycle}`}
             initial={reduceMotion ? false : { opacity: 0, y: 14 }}
             animate={showIntro ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
             transition={{ duration: reduceMotion ? 0 : 0.48, ease: EASE }}
-            className="mb-5 font-mono text-xs tracking-[0.3em] text-[#c5ff00] sm:mb-6"
+            className="mb-5 font-mono text-xs tracking-[0.3em] text-[#c5ff00] sm:mb-6 max-lg:text-center"
           >
             {t.about.kicker}
           </motion.div>
@@ -81,7 +81,7 @@ export default function About() {
                 ? { opacity: 1, y: '0%', filter: 'blur(0px)' }
                 : { opacity: 0, y: '34%', filter: 'blur(8px)' }}
               transition={{ duration: reduceMotion ? 0 : 0.72, delay: reduceMotion ? 0 : 0.08, ease: EASE }}
-              className={`font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl ${
+              className={`font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl max-lg:text-center ${
                 lang === 'ua'
                   ? 'md:text-[3.65rem] lg:text-[4.35rem] xl:text-[4.6rem]'
                   : 'md:text-6xl lg:text-[5.25rem]'
@@ -92,8 +92,8 @@ export default function About() {
           </div>
         </div>
 
-        <div ref={articleRef} className="relative md:col-span-7 md:pt-2">
-          <div aria-hidden className="absolute -left-4 top-1 h-[calc(100%-0.25rem)] w-px bg-white/[0.09] sm:-left-7">
+        <div ref={articleRef} className="relative lg:col-span-7 lg:pt-2">
+          <div aria-hidden className="absolute -left-4 top-1 hidden h-[calc(100%-0.25rem)] w-px bg-white/[0.09] sm:-left-7 lg:block">
             <motion.span
               className="block h-full w-px origin-top bg-[#c5ff00] shadow-[0_0_12px_rgba(197,255,0,0.18)]"
               style={{ scaleY: reduceMotion ? 1 : lineProgress }}
@@ -105,12 +105,12 @@ export default function About() {
             initial={reduceMotion ? false : HIDDEN}
             animate={showIntro ? VISIBLE : HIDDEN}
             transition={{ duration: reduceMotion ? 0 : 0.68, delay: reduceMotion ? 0 : 0.18, ease: EASE }}
-            className="max-w-2xl text-xl font-light leading-snug text-white sm:text-2xl md:text-3xl"
+            className="max-w-2xl text-xl font-light leading-snug text-white sm:text-2xl md:text-3xl max-lg:mx-auto max-lg:text-center"
           >
             {t.about.lead}
           </motion.p>
 
-          <div className="mt-9 max-w-2xl space-y-6 text-base leading-relaxed text-white/[0.68] sm:text-lg sm:leading-relaxed">
+          <div className="mt-9 max-w-2xl space-y-6 text-base leading-relaxed text-white/[0.68] sm:text-lg sm:leading-relaxed max-lg:mx-auto max-lg:text-center">
             {t.about.body.map((paragraph, index) => (
               <ReadingParagraph
                 key={`${revealCycle}-${index}-${paragraph.slice(0, 18)}`}
@@ -122,12 +122,12 @@ export default function About() {
             ))}
           </div>
 
-          <ReadingMeta key={`about-meta-${revealCycle}`} reduceMotion={reduceMotion}>
+          <ReadingMeta key={`about-meta-${revealCycle}`} reduceMotion={reduceMotion} className="max-lg:text-center">
             <p className="mt-9 font-mono text-xs tracking-[0.06em] text-white/48 sm:text-sm">
               {t.about.closing}
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-2">
+            <div className="mt-10 flex flex-wrap gap-2 max-lg:justify-center">
               {t.about.tags.map((tag) => (
                 <span
                   key={tag}
@@ -163,7 +163,7 @@ function ReadingParagraph({ children, reduceMotion, statement = false }) {
   );
 }
 
-function ReadingMeta({ children, reduceMotion }) {
+function ReadingMeta({ children, reduceMotion, className = '' }) {
   const metaRef = useRef(null);
   const visible = useViewportPresence(metaRef, 0.9, 0.08);
 
@@ -175,6 +175,7 @@ function ReadingMeta({ children, reduceMotion }) {
         ? { opacity: 1, y: 0, filter: 'blur(0px)' }
         : { opacity: 0, y: 20, filter: 'blur(4px)' }}
       transition={{ duration: reduceMotion ? 0 : 0.58, ease: EASE }}
+      className={className}
     >
       {children}
     </motion.div>

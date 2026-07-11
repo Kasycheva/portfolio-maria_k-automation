@@ -195,11 +195,11 @@ export default function AIMaria() {
     : -1;
 
   return (
-    <section id="ai" className="relative py-24 sm:py-32 md:py-40 border-t border-white/5 bg-[radial-gradient(ellipse_at_center,rgba(197,255,0,0.035),transparent_58%)]">
+    <section id="ai" className="relative overflow-x-clip py-24 sm:py-32 md:py-40 border-t border-white/5 bg-[radial-gradient(ellipse_at_center,rgba(197,255,0,0.035),transparent_58%)]">
       <div className="px-4 sm:px-6 md:px-12 lg:px-20 max-w-[1600px] mx-auto">
         <Reveal variant="heading" y={44}>
-          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-8">{t.ai.kicker}</div>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-8 max-md:text-center">{t.ai.kicker}</div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 max-md:items-center max-md:text-center">
             <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tight">{t.ai.heading}</h2>
             <p className="text-white/55 max-w-md">{t.ai.sub}</p>
           </div>
@@ -207,7 +207,7 @@ export default function AIMaria() {
 
         <div
           ref={scrollTrackRef}
-          className="relative mt-8 h-[145svh] sm:mt-12 sm:h-[155svh] lg:h-[175svh] 2xl:h-[185svh]"
+          className="relative mt-8 sm:mt-12 h-[145svh] sm:h-[155svh] lg:h-[130svh] 2xl:h-[140svh]"
         >
           <div className="sticky top-0 flex min-h-svh items-center py-4 sm:py-8 [perspective:900px]">
             <div

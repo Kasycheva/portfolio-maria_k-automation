@@ -2,9 +2,25 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from './LangContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDeviceCapability } from './useDeviceCapability';
+
+// Resolution-appropriate, lazily loaded source. Phones and genuinely constrained
+// devices (low memory / data-saver) get a small, keyframe-dense encode so
+// frame-seeking stays cheap and it still looks sharp on a small screen. Strong
+// tablets and desktop get the full-quality clip. Resolution is chosen by screen
+// size + real constraint — NOT by reduced-motion, so a capable screen never
+// loses sharpness. The frame-scrub design itself is identical on every tier.
+function pickVideoSource(lowPower) {
+  if (typeof window === 'undefined') return '/assets/maria-video-opt-hq.mp4';
+  const w = window.innerWidth || document.documentElement.clientWidth || 1024;
+  if (w < 768) return '/assets/maria-video-mobile.mp4';   // phones: light
+  if (lowPower) return '/assets/maria-video-mobile.mp4';  // weak tablet: light
+  return '/assets/maria-video-opt-hq.mp4';                // strong tablet + desktop: HQ
+}
 
 export default function Hero() {
   const { t } = useLang();
+  const { tier, lowPower } = useDeviceCapability();
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const targetTimeRef = useRef(0);
@@ -16,9 +32,23 @@ export default function Hero() {
   const touchStartYRef = useRef(null);
   const stableVHRef = useRef(0);
   const stableWRef = useRef(0);
+  // Tier drives how aggressively we throttle seeks. Kept in a ref so the RAF
+  // loop reads the latest value without re-subscribing.
+  const liteRef = useRef(false);
+  const [videoSrc, setVideoSrc] = useState(null);
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+
+  useEffect(() => {
+    liteRef.current = tier === 'lite';
+  }, [tier]);
+
+  // Lazy-load: resolve the source only after mount, so the poster paints first
+  // and the (right-sized) video download is deferred off the critical path.
+  useEffect(() => {
+    setVideoSrc(pickVideoSource(lowPower));
+  }, [lowPower]);
 
   // Stable viewport height: ignore the mobile URL bar showing/hiding (it
   // changes window.innerHeight mid-scroll, which made the hero gate move and
@@ -59,10 +89,10 @@ export default function Hero() {
     };
   }, []);
 
-  // Robust video loading + unlock seeking
+  // Robust video loading + unlock seeking. Runs once the (lazy) source resolves.
   useEffect(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !videoSrc) return;
     const ready = () => setVideoReady(true);
     if (v.readyState >= 1) ready();
     v.addEventListener('loadedmetadata', ready);
@@ -75,7 +105,7 @@ export default function Hero() {
       v.removeEventListener('loadeddata', ready);
       v.removeEventListener('canplay', ready);
     };
-  }, []);
+  }, [videoSrc]);
 
   // Keep the final Hero frame as a real gate. Reverse scrolling always remains available.
   useEffect(() => {
@@ -121,7 +151,10 @@ export default function Hero() {
     };
     const onScrollGate = () => {
       const gateY = getGateY();
-      if (!unlockedRef.current && window.scrollY > gateY) {
+      // Small dead-zone (6px): a sub-pixel overshoot at the gate shouldn't fire
+      // an immediate hard snap-back every frame — that stacking of snaps is what
+      // made the locked gate tremble on touch devices when pushed past 100%.
+      if (!unlockedRef.current && window.scrollY > gateY + 6) {
         window.dispatchEvent(new Event('hero:snap-to-gate'));
       }
       if (unlockedRef.current && window.scrollY > gateY + 24) {
@@ -188,10 +221,16 @@ export default function Hero() {
     const loop = () => {
       const v = videoRef.current;
       if (v && v.duration) {
-        // Smooth interpolation factor; lower = silkier (with more lag), higher = snappier
-        currentTimeRef.current += (targetTimeRef.current - currentTimeRef.current) * 0.18;
+        // Smooth interpolation factor; lower = silkier (with more lag), higher = snappier.
+        // On weak devices, a lower factor + larger paint threshold issue far fewer
+        // currentTime seeks per scroll, which is what keeps Android decoders from
+        // piling up and juddering. Capable devices keep the original snappy values.
+        const lite = liteRef.current;
+        const lerp = lite ? 0.12 : 0.18;
+        const seekThreshold = lite ? 0.03 : 0.012;
+        currentTimeRef.current += (targetTimeRef.current - currentTimeRef.current) * lerp;
         // Only push to video if delta worth a paint
-        if (Math.abs(currentTimeRef.current - lastAppliedRef.current) > 0.012) {
+        if (Math.abs(currentTimeRef.current - lastAppliedRef.current) > seekThreshold) {
           // Don't stack a new seek while the decoder is still resolving the
           // previous one — on weak browsers (smart TVs) seek pile-up blanks the
           // video mid-scroll. A 200ms fallback still forces progress if
@@ -236,8 +275,19 @@ export default function Hero() {
           <div className="hero-media relative h-full w-full md:w-[58%]">
             <video
               ref={videoRef}
-              src="/assets/maria-video-opt-hq.mp4"
+              src={videoSrc || undefined}
               muted playsInline preload="auto"
+              // Extra inline hints for non-standard mobile browsers (UC / X5 / the
+              // "Mia" case) that would otherwise open the file as a standalone
+              // video tab or force fullscreen.
+              // eslint-disable-next-line react/no-unknown-property
+              webkit-playsinline="true"
+              // eslint-disable-next-line react/no-unknown-property
+              x5-playsinline="true"
+              disablePictureInPicture
+              disableRemotePlayback
+              controls={false}
+              controlsList="nodownload noplaybackrate nofullscreen"
               poster="/assets/maria-no-sunglasses-hq.jpg"
               className="hero-vid absolute inset-0 w-full h-full object-cover object-left"
               style={{ opacity: videoReady ? 1 : 0, transition: 'opacity .4s' }}
@@ -251,8 +301,13 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right content layer */}
-        <div className="hero-layout relative z-10 flex h-full w-full flex-col justify-between px-4 pb-5 pt-20 sm:px-6 sm:pb-8 sm:pt-24 md:px-12 md:pb-10 md:pt-28 lg:px-20 min-[2200px]:px-28">
+        {/* Right content layer. Height is the SMALL viewport (svh), not 100vh:
+            on Android Chrome 100vh sits behind the address bar, which pushed the
+            bottom progress indicator off-screen until you scrolled to the very
+            end. svh = height with all browser bars visible, so the indicator is
+            always in view. The video layer above keeps h-screen (full 100vh), so
+            it still covers the whole screen with no seam. */}
+        <div className="hero-layout relative z-10 flex h-[100svh] w-full flex-col justify-between px-4 pb-5 pt-20 sm:px-6 sm:pb-8 sm:pt-24 md:px-12 md:pb-10 md:pt-28 lg:px-20 min-[2200px]:px-28">
           <div />
           <div className="hero-content min-h-[280px] sm:min-h-[320px] md:ml-auto md:w-[48%] lg:w-[44%] min-[2200px]:max-w-[960px]">
             <AnimatePresence mode="wait">

@@ -34,22 +34,20 @@ const CARD_GRID = {
   },
 };
 
+// A clean entrance: fade + gentle rise only. The earlier version animated
+// `filter: blur()` and a `clipPath` wipe, which read as the cards "loading in"
+// and flickering between each other during the stagger. Opacity + translate are
+// GPU-composited and never flicker.
 const CARD_REVEAL = {
   hidden: {
     opacity: 0,
-    y: 42,
-    rotateX: -5,
-    filter: 'blur(6px)',
-    clipPath: 'inset(10% 0 0 0)',
+    y: 28,
   },
   visible: {
     opacity: 1,
     y: 0,
-    rotateX: 0,
-    filter: 'blur(0px)',
-    clipPath: 'inset(0 0 0 0)',
     transition: {
-      duration: 0.68,
+      duration: 0.6,
       ease: [0.22, 1, 0.36, 1],
     },
   },
@@ -63,6 +61,14 @@ export default function CaseStudies() {
   const reduceMotion = useReducedMotion();
   const [cardsVisible, setCardsVisible] = useState(false);
   const L = (o) => (lang === 'ua' ? o.ua : o.en);
+
+  // Freeze the page behind the detail modal. Without this, touch scrolling on
+  // phones/tablets moves the page under the overlay and the modal feels cut off.
+  useEffect(() => {
+    if (!active) return undefined;
+    window.dispatchEvent(new CustomEvent('lenis:stop'));
+    return () => window.dispatchEvent(new CustomEvent('lenis:start'));
+  }, [active]);
 
   useEffect(() => {
     if (reduceMotion) {
@@ -100,8 +106,8 @@ export default function CaseStudies() {
     <section id="cases" className="relative py-24 md:py-32 border-t border-white/5">
       <div className="px-6 md:px-12 lg:px-20 max-w-[1500px] mx-auto">
         <Reveal variant="heading" y={44}>
-          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-8">{t.cases.kicker}</div>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-8 max-md:text-center">{t.cases.kicker}</div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 max-md:items-center max-md:text-center">
             <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tight max-w-3xl">{t.cases.heading}</h2>
             <p className="text-white/55 max-w-md">{t.cases.sub}</p>
           </div>
@@ -133,14 +139,14 @@ export default function CaseStudies() {
                 />
               </div>
 
-              <div className="flex flex-1 flex-col p-7 md:p-8">
+              <div className="flex flex-1 flex-col p-7 md:p-8 max-lg:items-center max-lg:text-center">
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-white/45">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#c5ff00]" />
                   {L(c.category)}
                 </div>
                 <h3 className="mt-3 font-serif text-2xl md:text-[1.7rem] leading-snug">{L(c.title)}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-white/55 line-clamp-2">{L(c.desc)}</p>
-                <div className="mt-5 flex flex-wrap gap-1.5">
+                <div className="mt-5 flex flex-wrap gap-1.5 max-lg:justify-center">
                   {c.tech.slice(0, 4).map((tg) => (
                     <span key={tg} className="rounded-full border border-white/10 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-white/55">{tg}</span>
                   ))}
@@ -169,12 +175,12 @@ export default function CaseStudies() {
             >
               <button onClick={() => setActive(null)} aria-label={t.cases.close} className="absolute right-5 top-5 z-10 h-9 w-9 rounded-full border border-white/15 text-white/70 transition hover:bg-white/10">✕</button>
 
-              <Section>
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-white/45">
+              <Section className="max-md:text-center">
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-white/45 max-md:justify-center">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#c5ff00]" /> {L(active.category)}
                 </div>
                 <h3 className="mt-3 font-serif text-3xl md:text-5xl leading-[1.04]">{L(active.title)}</h3>
-                <p className="mt-3 max-w-2xl text-lg text-white/60">{L(active.desc)}</p>
+                <p className="mt-3 max-w-2xl text-lg text-white/60 max-md:mx-auto">{L(active.desc)}</p>
               </Section>
 
               {/* real workflow screenshot — caption sits above so it never overlaps the image */}

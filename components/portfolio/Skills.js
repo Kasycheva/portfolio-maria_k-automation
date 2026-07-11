@@ -48,8 +48,8 @@ export default function Skills() {
     <section id="skills" ref={ref} className="relative py-20 md:py-28 border-t border-white/5">
       <div className="px-6 md:px-12 lg:px-20 max-w-7xl mx-auto">
         <Reveal variant="heading" y={44}>
-          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-6">{t.skills.kicker}</div>
-          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tight">{t.skills.heading}</h2>
+          <div className="font-mono text-xs tracking-[0.3em] text-[#c5ff00] mb-6 max-lg:text-center">{t.skills.kicker}</div>
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tight max-lg:text-center">{t.skills.heading}</h2>
         </Reveal>
       </div>
 
