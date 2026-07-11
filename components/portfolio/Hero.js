@@ -151,7 +151,10 @@ export default function Hero() {
     };
     const onScrollGate = () => {
       const gateY = getGateY();
-      if (!unlockedRef.current && window.scrollY > gateY) {
+      // Small dead-zone (6px): a sub-pixel overshoot at the gate shouldn't fire
+      // an immediate hard snap-back every frame — that stacking of snaps is what
+      // made the locked gate tremble on touch devices when pushed past 100%.
+      if (!unlockedRef.current && window.scrollY > gateY + 6) {
         window.dispatchEvent(new Event('hero:snap-to-gate'));
       }
       if (unlockedRef.current && window.scrollY > gateY + 24) {

@@ -29,7 +29,13 @@ export default function SmoothScroll() {
         const gateLocked = root.dataset.heroGateLocked === 'true';
         if (gateLocked && deltaY > 0 && Number.isFinite(gateY) && lenis.targetScroll + deltaY >= gateY) {
           if (event.cancelable) event.preventDefault();
-          lenis.scrollTo(gateY, { duration: 0.35, force: true });
+          // Only snap to the gate if we're not already parked there. Re-issuing
+          // scrollTo on every blocked touch delta restarts the tween, which is
+          // what made the gate tremble on touch devices when you keep pushing
+          // past 100% (the scrubbing video jitters back and forth with it).
+          if (Math.abs(lenis.targetScroll - gateY) > 2) {
+            lenis.scrollTo(gateY, { duration: 0.35, force: true });
+          }
           return false;
         }
       },
