@@ -207,7 +207,7 @@ export default function AIMaria() {
 
         <div
           ref={scrollTrackRef}
-          className="relative mt-8 sm:mt-12 h-[145svh] sm:h-[155svh] lg:h-[175svh] 2xl:h-[185svh]"
+          className="relative mt-8 sm:mt-12 h-[145svh] sm:h-[155svh] lg:h-[130svh] 2xl:h-[140svh]"
         >
           <div className="sticky top-0 flex min-h-svh items-center py-4 sm:py-8 [perspective:900px]">
             <div

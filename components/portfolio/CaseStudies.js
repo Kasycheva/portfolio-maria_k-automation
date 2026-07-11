@@ -34,22 +34,20 @@ const CARD_GRID = {
   },
 };
 
+// A clean entrance: fade + gentle rise only. The earlier version animated
+// `filter: blur()` and a `clipPath` wipe, which read as the cards "loading in"
+// and flickering between each other during the stagger. Opacity + translate are
+// GPU-composited and never flicker.
 const CARD_REVEAL = {
   hidden: {
     opacity: 0,
-    y: 42,
-    rotateX: -5,
-    filter: 'blur(6px)',
-    clipPath: 'inset(10% 0 0 0)',
+    y: 28,
   },
   visible: {
     opacity: 1,
     y: 0,
-    rotateX: 0,
-    filter: 'blur(0px)',
-    clipPath: 'inset(0 0 0 0)',
     transition: {
-      duration: 0.68,
+      duration: 0.6,
       ease: [0.22, 1, 0.36, 1],
     },
   },

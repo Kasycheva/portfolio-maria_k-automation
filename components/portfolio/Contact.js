@@ -258,13 +258,16 @@ export default function Contact() {
               <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4 max-lg:justify-center">
                 <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#c5ff00]/70">{t.contact.directory}</span>
               </div>
-              <div>
+              {/* On phones the list is a centered fixed-width block with the
+                  rows left-aligned, so every icon lines up in one column instead
+                  of each row centring on its own (which scattered the icons). */}
+              <div className="max-lg:mx-auto max-lg:max-w-xs">
               {CONTACTS.map((contact, index) => {
                 const Icon = contact.icon;
                 const isEmail = contact.key === 'email';
                 const showCopied = isEmail && copiedEmail;
                 const rowClass =
-                  'group flex w-full items-center gap-5 border-b border-white/[0.08] py-6 text-left transition-colors hover:border-[#c5ff00]/25 max-lg:justify-center';
+                  'group flex w-full items-center gap-5 border-b border-white/[0.08] py-6 text-left transition-colors hover:border-[#c5ff00]/25';
                 const body = (
                   <>
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
@@ -274,7 +277,7 @@ export default function Contact() {
                         <Icon className="h-[17px] w-[17px]" strokeWidth={1.6} />
                       )}
                     </span>
-                    <span className="min-w-0 flex-1 max-lg:flex-none max-lg:text-center">
+                    <span className="min-w-0 flex-1">
                       <span className="block font-mono text-[9px] uppercase tracking-[0.26em] text-white/35">
                         0{index + 1} / {isEmail ? t.contact.copyEmail : t.contact[contact.key]}
                       </span>
@@ -305,12 +308,12 @@ export default function Contact() {
               <a
                 href="/assets/resume.pdf"
                 download="AI Automation - Kasycheva Maria.pdf"
-                className="group flex items-center gap-5 border-b border-white/[0.08] py-6 max-lg:justify-center"
+                className="group flex items-center gap-5 border-b border-white/[0.08] py-6"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[#c5ff00]/70 transition group-hover:border-[#c5ff00]/40 group-hover:bg-[#c5ff00]/[0.05] group-hover:text-[#c5ff00]">
                   <Download className="h-[17px] w-[17px]" strokeWidth={2} />
                 </span>
-                <span className="min-w-0 flex-1 max-lg:flex-none max-lg:text-center">
+                <span className="min-w-0 flex-1">
                   <span className="block font-mono text-[9px] uppercase tracking-[0.26em] text-white/40">
                     04 / PDF
                   </span>
